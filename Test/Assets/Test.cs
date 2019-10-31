@@ -4,7 +4,7 @@ using System;
 
 unsafe sealed class Test : MonoBehaviour
 {
-    static void Callback(double timeStamp, byte* message, uint messageSize, void* userData)
+    static void Callback(double timeStamp, byte* message, ulong messageSize, void* userData)
     {
         Debug.Log(timeStamp);
     }
@@ -37,8 +37,9 @@ unsafe sealed class Test : MonoBehaviour
 
     void OnDestroy()
     {
-        if (_device != null)
+        if (_device != null && _device->ok)
         {
+            RtMidi.rtmidi_in_cancel_callback(_device);
             RtMidi.rtmidi_in_free(_device);
             _device = null;
         }

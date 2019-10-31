@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using System;
 
+// CAUTION: We assume size_t == ulong
+
 unsafe static class RtMidi
 {
     // C wrapper class
@@ -44,7 +46,7 @@ unsafe static class RtMidi
     // The type of a RtMidi callback function
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void Callback
-        (double timeStamp, Byte* message, uint messageSize, void* userData);
+        (double timeStamp, Byte* message, ulong messageSize, void* userData);
 
     // RtMidi API
 
@@ -104,7 +106,7 @@ unsafe static class RtMidi
     );
 
     [DllImport("RtMidi.dll")] public static extern
-    double rtmidi_in_get_message(Wrapper* device, byte* message, ref uint size);
+    double rtmidi_in_get_message(Wrapper* device, byte* message, ref ulong size);
 
     // RtMidiOut API
 
