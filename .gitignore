@@ -1,0 +1,19 @@
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Vim
+*.swp
+
+# Visual Studio
+.vs
+*.vcxproj.user
+/VisualStudio/x64
+
+# Unity
+/Test/Library
+/Test/Logs
+/Test/Temp
