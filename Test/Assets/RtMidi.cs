@@ -1,7 +1,13 @@
 using System.Runtime.InteropServices;
 using System;
 
-// CAUTION: We assume size_t == ulong
+//
+// CAUTION: We assume sizeof(size_t) == sizeof(ulong).
+//
+// NOTE: The RtMidi callback API is omitted because it doesn't work well under
+// the unmanaged-to-managed invocation (it'll be broken when the callback is
+// called from an unattached MIDI driver thread).
+//
 
 unsafe static class RtMidi
 {
@@ -42,11 +48,6 @@ unsafe static class RtMidi
         SystemError,
         Thread_error
     }
-
-    // The type of a RtMidi callback function
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void Callback
-        (double timeStamp, Byte* message, ulong messageSize, void* userData);
 
     // RtMidi API
 
@@ -90,12 +91,6 @@ unsafe static class RtMidi
 
     [DllImport("RtMidi.dll")] public static extern
     Api rtmidi_in_get_current_api(Wrapper* device);
-
-    [DllImport("RtMidi.dll")] public static extern
-    void rtmidi_in_set_callback(Wrapper* device, Callback callback, void* userData);
-
-    [DllImport("RtMidi.dll")] public static extern
-    void rtmidi_in_cancel_callback(Wrapper* device);
 
     [DllImport("RtMidi.dll")] public static extern
     void rtmidi_in_ignore_types(

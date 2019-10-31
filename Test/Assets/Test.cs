@@ -4,11 +4,6 @@ using System;
 
 unsafe sealed class Test : MonoBehaviour
 {
-    static void Callback(double timeStamp, byte* message, ulong messageSize, void* userData)
-    {
-        Debug.Log(timeStamp);
-    }
-
     RtMidi.Wrapper* _device = null;
 
     void Start()
@@ -31,15 +26,28 @@ unsafe sealed class Test : MonoBehaviour
         for (var i = 0; i < portCount; i++)
             Debug.Log(Marshal.PtrToStringAnsi(RtMidi.rtmidi_get_port_name(_device, (uint)i)));
 
-        RtMidi.rtmidi_in_set_callback(_device, Callback, null);
         if (portCount != 0) RtMidi.rtmidi_open_port(_device, 0, "RtMidi");
+    }
+
+    void Update()
+    {
+        if (_device == null || !_device->ok) return;
+
+        byte* msg = stackalloc byte [32];
+
+        while (true)
+        {
+            ulong size = 32;
+            var stamp = RtMidi.rtmidi_in_get_message(_device, msg, ref size);
+            if (stamp < 0 || size == 0) break;
+            Debug.Log(msg[0]);
+        }
     }
 
     void OnDestroy()
     {
         if (_device != null && _device->ok)
         {
-            RtMidi.rtmidi_in_cancel_callback(_device);
             RtMidi.rtmidi_in_free(_device);
             _device = null;
         }
