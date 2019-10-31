@@ -13,6 +13,10 @@ Desktop.ini
 *.vcxproj.user
 /VisualStudio/x64
 
+# Xcode
+xcuserdata
+xcshareddata
+
 # Unity
 /Test/Library
 /Test/Logs
