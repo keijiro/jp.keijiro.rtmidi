@@ -1,46 +1,52 @@
 using UnityEngine;
-using System.Runtime.InteropServices;
-using System;
+using Marshal = System.Runtime.InteropServices.Marshal;
+using RtMidiDll = RtMidi.Unmanaged;
 
 unsafe sealed class Test : MonoBehaviour
 {
-    RtMidi.Wrapper* _device = null;
+    RtMidiDll.Wrapper* _device = null;
 
     void Start()
     {
-        var apis = new RtMidi.Api[10];
-        var res = RtMidi.rtmidi_get_compiled_api(apis, (uint)apis.Length);
-        for (var i = 0; i < res; i++)
-            Debug.Log(Marshal.PtrToStringAnsi(RtMidi.rtmidi_api_display_name(apis[i])));
+        // Show available APIs.
+        var apis = new RtMidiDll.Api[10];
+        var apiCount = RtMidiDll.GetCompiledApi(apis, (uint)apis.Length);
+        for (var i = 0; i < apiCount; i++)
+            Debug.Log(Marshal.PtrToStringAnsi(RtMidiDll.ApiDisplayName(apis[i])));
 
-        _device = RtMidi.rtmidi_in_create_default();
+        // Try creating a default MIDI-in device.
+        _device = RtMidiDll.InCreateDefault();
+
         if (_device == null || !_device->ok)
         {
             Debug.Log("Failed to create a default device.");
             return;
         }
 
-        var portCount = RtMidi.rtmidi_get_port_count(_device);
-        Debug.Log("number of ports " + portCount);
-
+        // Show available ports.
+        var portCount = RtMidiDll.GetPortCount(_device);
         for (var i = 0; i < portCount; i++)
-            Debug.Log(Marshal.PtrToStringAnsi(RtMidi.rtmidi_get_port_name(_device, (uint)i)));
+            Debug.Log(Marshal.PtrToStringAnsi(RtMidiDll.GetPortName(_device, (uint)i)));
 
-        if (portCount != 0) RtMidi.rtmidi_open_port(_device, 0, "RtMidi");
+        // On Linux the first port must be a MIDI-thru port, so it's better to
+        // choose the last port for testing use.
+        if (portCount > 0) RtMidiDll.OpenPort(_device, portCount - 1, "RtMidi");
     }
 
     void Update()
     {
         if (_device == null || !_device->ok) return;
 
+        // Output queued messages.
         byte* msg = stackalloc byte [32];
 
         while (true)
         {
             ulong size = 32;
-            var stamp = RtMidi.rtmidi_in_get_message(_device, msg, ref size);
+            var stamp = RtMidiDll.InGetMessage(_device, msg, ref size);
             if (stamp < 0 || size == 0) break;
-            Debug.Log(msg[0]);
+
+            Debug.Log(string.Format("{0:X} {1} {2}", msg[0], msg[1], msg[2]));
         }
     }
 
@@ -48,7 +54,8 @@ unsafe sealed class Test : MonoBehaviour
     {
         if (_device != null && _device->ok)
         {
-            RtMidi.rtmidi_in_free(_device);
+            // Release the device.
+            RtMidiDll.InFree(_device);
             _device = null;
         }
     }
