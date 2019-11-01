@@ -1,62 +1,43 @@
 using UnityEngine;
-using Marshal = System.Runtime.InteropServices.Marshal;
-using RtMidiDll = RtMidi.Unmanaged;
+using System.Collections.Generic;
 
-unsafe sealed class Test : MonoBehaviour
+sealed class Test : MonoBehaviour
 {
-    RtMidiDll.Wrapper* _device = null;
+    MidiProbe _probe;
+    List<MidiInputPort> _ports = new List<MidiInputPort>();
 
     void Start()
     {
-        // Show available APIs.
-        var apis = new RtMidiDll.Api[10];
-        var apiCount = RtMidiDll.GetCompiledApi(apis, (uint)apis.Length);
-        for (var i = 0; i < apiCount; i++)
-            Debug.Log(Marshal.PtrToStringAnsi(RtMidiDll.ApiDisplayName(apis[i])));
+        _probe = new MidiProbe();
 
-        // Try creating a default MIDI-in device.
-        _device = RtMidiDll.InCreateDefault();
-
-        if (_device == null || !_device->ok)
+        for (var i = 0; i < _probe.PortCount; i++)
         {
-            Debug.Log("Failed to create a default device.");
-            return;
+            Debug.Log(_probe.GetPortName(i));
+
+            _ports.Add(
+                new MidiInputPort(i)
+                {
+                    OnNoteOn = (byte channel, byte note, byte velocity) =>
+                        Debug.Log(string.Format("On ({0}) {1} {2}", channel, note, velocity)),
+
+                    OnNoteOff = (byte channel, byte note) =>
+                        Debug.Log(string.Format("Off ({0}) {1}", channel, note)),
+
+                    OnControlChange = (byte channel, byte number, byte value) =>
+                        Debug.Log(string.Format("CC ({0}) {1} {2}", channel, number, value))
+                }
+            );
         }
-
-        // Show available ports.
-        var portCount = RtMidiDll.GetPortCount(_device);
-        for (var i = 0; i < portCount; i++)
-            Debug.Log(Marshal.PtrToStringAnsi(RtMidiDll.GetPortName(_device, (uint)i)));
-
-        // On Linux the first port must be a MIDI-thru port, so it's better to
-        // choose the last port for testing use.
-        if (portCount > 0) RtMidiDll.OpenPort(_device, portCount - 1, "RtMidi");
     }
 
     void Update()
     {
-        if (_device == null || !_device->ok) return;
-
-        // Output queued messages.
-        byte* msg = stackalloc byte [32];
-
-        while (true)
-        {
-            ulong size = 32;
-            var stamp = RtMidiDll.InGetMessage(_device, msg, ref size);
-            if (stamp < 0 || size == 0) break;
-
-            Debug.Log(string.Format("{0:X} {1} {2}", msg[0], msg[1], msg[2]));
-        }
+        foreach (var p in _ports) p.ProcessMessages();
     }
 
     void OnDestroy()
     {
-        if (_device != null && _device->ok)
-        {
-            // Release the device.
-            RtMidiDll.InFree(_device);
-            _device = null;
-        }
+        _probe?.Dispose();
+        foreach (var p in _ports) p.Dispose();
     }
 }
