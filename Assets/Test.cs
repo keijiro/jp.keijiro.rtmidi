@@ -19,10 +19,10 @@ sealed class Test : MonoBehaviour
                         Debug.Log(string.Format("{0} [{1}] On {2} ({3})", name, channel, note, velocity)),
 
                     OnNoteOff = (byte channel, byte note) =>
-                        Debug.Log(string.Format("{0} [{1}] On {2}", name, channel, note)),
+                        Debug.Log(string.Format("{0} [{1}] Off {2}", name, channel, note)),
 
                     OnControlChange = (byte channel, byte number, byte value) =>
-                        Debug.Log(string.Format("{0} [{1}] On {2} ({3})", name, channel, number, value))
+                        Debug.Log(string.Format("{0} [{1}] CC {2} ({3})", name, channel, number, value))
                 }
             );
         }
