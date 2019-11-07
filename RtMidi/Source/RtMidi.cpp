@@ -886,6 +886,10 @@ static void midiInputCallback( const MIDIPacketList *list, void *procRef, void *
   }
 }
 
+// Keijiro: To avoid a CoreMIDI issue caused by repeatedly calling
+// MIDIClientDispose, let us pool and reuse MIDI client objects.
+static std::stack<MIDIClientRef> s_clientPool;
+
 MidiInCore :: MidiInCore( const std::string &clientName, unsigned int queueSizeLimit )
   : MidiInApi( queueSizeLimit )
 {
@@ -899,7 +903,7 @@ MidiInCore :: ~MidiInCore( void )
 
   // Cleanup.
   CoreMidiData *data = static_cast<CoreMidiData *> (apiData_);
-  MIDIClientDispose( data->client );
+  s_clientPool.push( data->client );
   if ( data->endpoint ) MIDIEndpointDispose( data->endpoint );
   delete data;
 }
@@ -909,7 +913,14 @@ void MidiInCore :: initialize( const std::string& clientName )
   // Set up our client.
   MIDIClientRef client;
   CFStringRef name = CFStringCreateWithCString( NULL, clientName.c_str(), kCFStringEncodingASCII );
-  OSStatus result = MIDIClientCreate(name, NULL, NULL, &client );
+  OSStatus result = noErr;
+  if ( s_clientPool.empty() )
+    result = MIDIClientCreate(name, NULL, NULL, &client );
+  else
+  {
+    client = s_clientPool.top();
+    s_clientPool.pop();
+  }
   if ( result != noErr ) {
     std::ostringstream ost;
     ost << "MidiInCore::initialize: error creating OS-X MIDI client object (" << result << ").";
@@ -922,6 +933,7 @@ void MidiInCore :: initialize( const std::string& clientName )
   CoreMidiData *data = (CoreMidiData *) new CoreMidiData;
   data->client = client;
   data->endpoint = 0;
+  data->port = 0;
   apiData_ = (void *) data;
   inputData_.apiData = (void *) data;
   CFRelease( name );
@@ -960,7 +972,6 @@ void MidiInCore :: openPort( unsigned int portNumber, const std::string &portNam
   CFRelease( portNameRef );
 
   if ( result != noErr ) {
-    MIDIClientDispose( data->client );
     errorString_ = "MidiInCore::openPort: error creating OS-X MIDI input port.";
     error( RtMidiError::DRIVER_ERROR, errorString_ );
     return;
@@ -970,7 +981,6 @@ void MidiInCore :: openPort( unsigned int portNumber, const std::string &portNam
   MIDIEndpointRef endpoint = MIDIGetSource( portNumber );
   if ( endpoint == 0 ) {
     MIDIPortDispose( port );
-    MIDIClientDispose( data->client );
     errorString_ = "MidiInCore::openPort: error getting MIDI input source reference.";
     error( RtMidiError::DRIVER_ERROR, errorString_ );
     return;
@@ -980,7 +990,6 @@ void MidiInCore :: openPort( unsigned int portNumber, const std::string &portNam
   result = MIDIPortConnectSource( port, endpoint, NULL );
   if ( result != noErr ) {
     MIDIPortDispose( port );
-    MIDIClientDispose( data->client );
     errorString_ = "MidiInCore::openPort: error connecting OS-X MIDI input port.";
     error( RtMidiError::DRIVER_ERROR, errorString_ );
     return;
