@@ -1,6 +1,6 @@
 using RtMidiDll = RtMidi.Unmanaged;
 
-unsafe sealed class MidiInputPort : System.IDisposable
+unsafe sealed class MidiInPort : System.IDisposable
 {
     RtMidiDll.Wrapper* _rtmidi;
 
@@ -12,17 +12,17 @@ unsafe sealed class MidiInputPort : System.IDisposable
     public NoteOffDelegate OnNoteOff { get; set; }
     public ControlChangeDelegate OnControlChange { get; set; }
 
-    public MidiInputPort(int portNumber)
+    public MidiInPort(int portNumber)
     {
         _rtmidi = RtMidiDll.InCreateDefault();
 
         if (_rtmidi == null || !_rtmidi->ok)
-            throw new System.InvalidOperationException("Can't create a MIDI input device.");
+            throw new System.InvalidOperationException("Failed to set up a MIDI input port.");
 
-        RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi Input");
+        RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi In");
     }
 
-    ~MidiInputPort()
+    ~MidiInPort()
     {
         if (_rtmidi == null || !_rtmidi->ok) return;
 

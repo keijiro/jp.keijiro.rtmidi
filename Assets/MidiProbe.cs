@@ -3,36 +3,54 @@ using RtMidiDll = RtMidi.Unmanaged;
 
 unsafe sealed class MidiProbe : System.IDisposable
 {
-    RtMidiDll.Wrapper* _rtmidi;
+    public enum Mode { In, Out }
 
-    public MidiProbe()
+    RtMidiDll.Wrapper* _rtmidi;
+    Mode _mode;
+
+    public MidiProbe(Mode mode)
     {
-        _rtmidi = RtMidiDll.InCreateDefault();
+        if (mode == Mode.In)
+            _rtmidi = RtMidiDll.InCreateDefault();
+        else // mode == Mode.Out
+            _rtmidi = RtMidiDll.OutCreateDefault();
+
+        _mode = mode;
 
         if (_rtmidi == null || !_rtmidi->ok)
-            throw new System.InvalidOperationException("Can't create a MIDI input device.");
+            throw new System.InvalidOperationException("Failed to create a MIDI client.");
     }
 
     ~MidiProbe()
     {
         if (_rtmidi == null || !_rtmidi->ok) return;
-        RtMidiDll.InFree(_rtmidi);
+
+        if (_mode == Mode.In)
+            RtMidiDll.InFree(_rtmidi);
+        else // _mode == Mode.Out
+            RtMidiDll.OutFree(_rtmidi);
     }
 
     public void Dispose()
     {
         if (_rtmidi == null || !_rtmidi->ok) return;
 
-        RtMidiDll.InFree(_rtmidi);
+        if (_mode == Mode.In)
+            RtMidiDll.InFree(_rtmidi);
+        else // _mode == Mode.Out
+            RtMidiDll.OutFree(_rtmidi);
+
         _rtmidi = null;
 
         System.GC.SuppressFinalize(this);
     }
 
-    public int PortCount { get {
-        if (_rtmidi == null || !_rtmidi->ok) return 0;
-        return (int)RtMidiDll.GetPortCount(_rtmidi);
-    } }
+    public int PortCount {
+        get {
+            if (_rtmidi == null || !_rtmidi->ok) return 0;
+            return (int)RtMidiDll.GetPortCount(_rtmidi);
+        }
+    }
 
     public string GetPortName(int port)
     {

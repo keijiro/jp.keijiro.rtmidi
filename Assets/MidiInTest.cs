@@ -1,19 +1,20 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-sealed class Test : MonoBehaviour
+sealed class MidiInTest : MonoBehaviour
 {
     MidiProbe _probe;
-    List<MidiInputPort> _ports = new List<MidiInputPort>();
+    List<MidiInPort> _ports = new List<MidiInPort>();
 
     void ScanPorts()
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
             var name = _probe.GetPortName(i);
+            Debug.Log("MIDI-in port found: " + name);
 
             _ports.Add(
-                new MidiInputPort(i)
+                new MidiInPort(i)
                 {
                     OnNoteOn = (byte channel, byte note, byte velocity) =>
                         Debug.Log(string.Format("{0} [{1}] On {2} ({3})", name, channel, note, velocity)),
@@ -36,7 +37,7 @@ sealed class Test : MonoBehaviour
 
     void Start()
     {
-        _probe = new MidiProbe();
+        _probe = new MidiProbe(MidiProbe.Mode.In);
         ScanPorts();
     }
 
