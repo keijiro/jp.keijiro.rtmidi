@@ -1,61 +1,63 @@
 using Marshal = System.Runtime.InteropServices.Marshal;
 using RtMidiDll = RtMidi.Unmanaged;
 
-unsafe sealed class MidiProbe : System.IDisposable
+namespace RtMidi.LowLevel
 {
-    public enum Mode { In, Out }
-
-    RtMidiDll.Wrapper* _rtmidi;
-    Mode _mode;
-
-    public MidiProbe(Mode mode)
+    unsafe public sealed class MidiProbe : System.IDisposable
     {
-        if (mode == Mode.In)
-            _rtmidi = RtMidiDll.InCreateDefault();
-        else // mode == Mode.Out
-            _rtmidi = RtMidiDll.OutCreateDefault();
+        public enum Mode { In, Out }
 
-        _mode = mode;
+        RtMidiDll.Wrapper* _rtmidi;
+        Mode _mode;
 
-        if (_rtmidi == null || !_rtmidi->ok)
-            throw new System.InvalidOperationException("Failed to create a MIDI client.");
-    }
+        public MidiProbe(Mode mode)
+        {
+            if (mode == Mode.In)
+                _rtmidi = RtMidiDll.InCreateDefault();
+            else // mode == Mode.Out
+                _rtmidi = RtMidiDll.OutCreateDefault();
 
-    ~MidiProbe()
-    {
-        if (_rtmidi == null || !_rtmidi->ok) return;
+            _mode = mode;
 
-        if (_mode == Mode.In)
-            RtMidiDll.InFree(_rtmidi);
-        else // _mode == Mode.Out
-            RtMidiDll.OutFree(_rtmidi);
-    }
+            if (_rtmidi == null || !_rtmidi->ok)
+                throw new System.InvalidOperationException("Failed to create a MIDI client.");
+        }
 
-    public void Dispose()
-    {
-        if (_rtmidi == null || !_rtmidi->ok) return;
+        ~MidiProbe()
+        {
+            if (_rtmidi == null || !_rtmidi->ok) return;
 
-        if (_mode == Mode.In)
-            RtMidiDll.InFree(_rtmidi);
-        else // _mode == Mode.Out
-            RtMidiDll.OutFree(_rtmidi);
+            if (_mode == Mode.In)
+                RtMidiDll.InFree(_rtmidi);
+            else // _mode == Mode.Out
+                RtMidiDll.OutFree(_rtmidi);
+        }
 
-        _rtmidi = null;
+        public void Dispose()
+        {
+            if (_rtmidi == null || !_rtmidi->ok) return;
 
-        System.GC.SuppressFinalize(this);
-    }
+            if (_mode == Mode.In)
+                RtMidiDll.InFree(_rtmidi);
+            else // _mode == Mode.Out
+                RtMidiDll.OutFree(_rtmidi);
 
-    public int PortCount {
-        get {
-            if (_rtmidi == null || !_rtmidi->ok) return 0;
-            return (int)RtMidiDll.GetPortCount(_rtmidi);
+            _rtmidi = null;
+
+            System.GC.SuppressFinalize(this);
+        }
+
+        public int PortCount {
+            get {
+                if (_rtmidi == null || !_rtmidi->ok) return 0;
+                return (int)RtMidiDll.GetPortCount(_rtmidi);
+            }
+        }
+
+        public string GetPortName(int port)
+        {
+            if (_rtmidi == null || !_rtmidi->ok) return null;
+            return Marshal.PtrToStringAnsi(RtMidiDll.GetPortName(_rtmidi, (uint)port));
         }
     }
-
-    public string GetPortName(int port)
-    {
-        if (_rtmidi == null || !_rtmidi->ok) return null;
-        return Marshal.PtrToStringAnsi(RtMidiDll.GetPortName(_rtmidi, (uint)port));
-    }
 }
-

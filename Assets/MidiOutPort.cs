@@ -1,69 +1,72 @@
 using RtMidiDll = RtMidi.Unmanaged;
 
-unsafe sealed class MidiOutPort : System.IDisposable
+namespace RtMidi.LowLevel
 {
-    RtMidiDll.Wrapper* _rtmidi;
-
-    public MidiOutPort(int portNumber)
+    unsafe public sealed class MidiOutPort : System.IDisposable
     {
-        _rtmidi = RtMidiDll.OutCreateDefault();
+        RtMidiDll.Wrapper* _rtmidi;
 
-        if (_rtmidi == null || !_rtmidi->ok)
-            throw new System.InvalidOperationException("Failed to set up a MIDI output port.");
+        public MidiOutPort(int portNumber)
+        {
+            _rtmidi = RtMidiDll.OutCreateDefault();
 
-        RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi Out");
-    }
+            if (_rtmidi == null || !_rtmidi->ok)
+                throw new System.InvalidOperationException("Failed to set up a MIDI output port.");
 
-    ~MidiOutPort()
-    {
-        if (_rtmidi == null || !_rtmidi->ok) return;
+            RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi Out");
+        }
 
-        RtMidiDll.OutFree(_rtmidi);
-    }
+        ~MidiOutPort()
+        {
+            if (_rtmidi == null || !_rtmidi->ok) return;
 
-    public void Dispose()
-    {
-        if (_rtmidi == null || !_rtmidi->ok) return;
+            RtMidiDll.OutFree(_rtmidi);
+        }
 
-        RtMidiDll.OutFree(_rtmidi);
-        _rtmidi = null;
+        public void Dispose()
+        {
+            if (_rtmidi == null || !_rtmidi->ok) return;
 
-        System.GC.SuppressFinalize(this);
-    }
+            RtMidiDll.OutFree(_rtmidi);
+            _rtmidi = null;
 
-    public void SendMessage(byte [] data)
-    {
-        if (_rtmidi == null || !_rtmidi->ok) return;
+            System.GC.SuppressFinalize(this);
+        }
 
-        fixed (byte* ptr = &data[0])
-            RtMidiDll.OutSendMessage(_rtmidi, ptr, data.Length);
-    }
+        public void SendMessage(byte [] data)
+        {
+            if (_rtmidi == null || !_rtmidi->ok) return;
 
-    public void SendMessage(byte d1, byte d2, byte d3)
-    {
-        if (_rtmidi == null || !_rtmidi->ok) return;
+            fixed (byte* ptr = &data[0])
+                RtMidiDll.OutSendMessage(_rtmidi, ptr, data.Length);
+        }
 
-        byte* msg = stackalloc byte [3] { d1, d2, d3 };
-        RtMidiDll.OutSendMessage(_rtmidi, msg, 3);
-    }
+        public void SendMessage(byte d1, byte d2, byte d3)
+        {
+            if (_rtmidi == null || !_rtmidi->ok) return;
 
-    public void SendNoteOn(int channel, int note, int velocity)
-    {
-        SendMessage((byte)(0x90 + channel), (byte)note, (byte)velocity);
-    }
+            byte* msg = stackalloc byte [3] { d1, d2, d3 };
+            RtMidiDll.OutSendMessage(_rtmidi, msg, 3);
+        }
 
-    public void SendNoteOff(int channel, int note)
-    {
-        SendMessage((byte)(0x80 + channel), (byte)note, (byte)64);
-    }
+        public void SendNoteOn(int channel, int note, int velocity)
+        {
+            SendMessage((byte)(0x90 + channel), (byte)note, (byte)velocity);
+        }
 
-    public void SendControlChange(int channel, int number, int value)
-    {
-        SendMessage((byte)(0xb0 + channel), (byte)number, (byte)value);
-    }
+        public void SendNoteOff(int channel, int note)
+        {
+            SendMessage((byte)(0x80 + channel), (byte)note, (byte)64);
+        }
 
-    public void SendAllOff(int channel)
-    {
-        SendMessage((byte)(0xb0 + channel), 120, 0);
+        public void SendControlChange(int channel, int number, int value)
+        {
+            SendMessage((byte)(0xb0 + channel), (byte)number, (byte)value);
+        }
+
+        public void SendAllOff(int channel)
+        {
+            SendMessage((byte)(0xb0 + channel), 120, 0);
+        }
     }
 }
