@@ -732,6 +732,10 @@ struct CoreMidiData {
   MIDISysexSendRequest sysexreq;
 };
 
+// Keijiro: To avoid a CoreMIDI issue caused by repeatedly calling
+// MIDIClientDispose, let us pool and reuse MIDI client objects.
+static std::stack<MIDIClientRef> s_clientPool;
+
 //*********************************************************************//
 //  API: OS-X
 //  Class Definitions: MidiInCore
@@ -885,10 +889,6 @@ static void midiInputCallback( const MIDIPacketList *list, void *procRef, void *
     packet = MIDIPacketNext(packet);
   }
 }
-
-// Keijiro: To avoid a CoreMIDI issue caused by repeatedly calling
-// MIDIClientDispose, let us pool and reuse MIDI client objects.
-static std::stack<MIDIClientRef> s_clientPool;
 
 MidiInCore :: MidiInCore( const std::string &clientName, unsigned int queueSizeLimit )
   : MidiInApi( queueSizeLimit )
@@ -1232,7 +1232,7 @@ MidiOutCore :: ~MidiOutCore( void )
 
   // Cleanup.
   CoreMidiData *data = static_cast<CoreMidiData *> (apiData_);
-  MIDIClientDispose( data->client );
+  s_clientPool.push( data->client );
   if ( data->endpoint ) MIDIEndpointDispose( data->endpoint );
   delete data;
 }
@@ -1242,10 +1242,17 @@ void MidiOutCore :: initialize( const std::string& clientName )
   // Set up our client.
   MIDIClientRef client;
   CFStringRef name = CFStringCreateWithCString( NULL, clientName.c_str(), kCFStringEncodingASCII );
-  OSStatus result = MIDIClientCreate(name, NULL, NULL, &client );
+  OSStatus result = noErr;
+  if ( s_clientPool.empty() )
+    result = MIDIClientCreate(name, NULL, NULL, &client );
+  else
+  {
+    client = s_clientPool.top();
+    s_clientPool.pop();
+  }
   if ( result != noErr ) {
     std::ostringstream ost;
-    ost << "MidiInCore::initialize: error creating OS-X MIDI client object (" << result << ").";
+    ost << "MidiOutCore::initialize: error creating OS-X MIDI client object (" << result << ").";
     errorString_ = ost.str();
     error( RtMidiError::DRIVER_ERROR, errorString_ );
     return;
@@ -1255,6 +1262,7 @@ void MidiOutCore :: initialize( const std::string& clientName )
   CoreMidiData *data = (CoreMidiData *) new CoreMidiData;
   data->client = client;
   data->endpoint = 0;
+  data->port = 0;
   apiData_ = (void *) data;
   CFRelease( name );
 }
@@ -1319,7 +1327,6 @@ void MidiOutCore :: openPort( unsigned int portNumber, const std::string &portNa
   OSStatus result = MIDIOutputPortCreate( data->client, portNameRef, &port );
   CFRelease( portNameRef );
   if ( result != noErr ) {
-    MIDIClientDispose( data->client );
     errorString_ = "MidiOutCore::openPort: error creating OS-X MIDI output port.";
     error( RtMidiError::DRIVER_ERROR, errorString_ );
     return;
@@ -1329,7 +1336,6 @@ void MidiOutCore :: openPort( unsigned int portNumber, const std::string &portNa
   MIDIEndpointRef destination = MIDIGetDestination( portNumber );
   if ( destination == 0 ) {
     MIDIPortDispose( port );
-    MIDIClientDispose( data->client );
     errorString_ = "MidiOutCore::openPort: error getting MIDI output destination reference.";
     error( RtMidiError::DRIVER_ERROR, errorString_ );
     return;
