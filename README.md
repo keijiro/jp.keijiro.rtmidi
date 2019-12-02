@@ -40,7 +40,7 @@ To the `scopedRegistries` section:
 To the `dependencies` section:
 
 ```
-"jp.keijiro.rtmidi": "1.0.2"
+"jp.keijiro.rtmidi": "1.0.3"
 ```
 
 After changes, the manifest file should look like below:
@@ -55,7 +55,7 @@ After changes, the manifest file should look like below:
     }
   ],
   "dependencies": {
-    "jp.keijiro.rtmidi": "1.0.2",
+    "jp.keijiro.rtmidi": "1.0.3",
     ...
 ```
 
