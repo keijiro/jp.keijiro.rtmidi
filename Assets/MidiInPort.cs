@@ -14,10 +14,11 @@ namespace RtMidi.LowLevel
         {
             _rtmidi = RtMidiDll.InCreateDefault();
 
+            if (_rtmidi != null && _rtmidi->ok)
+                RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi In");
+
             if (_rtmidi == null || !_rtmidi->ok)
                 throw new System.InvalidOperationException("Failed to set up a MIDI input port.");
-
-            RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi In");
         }
 
         ~MidiInPort()

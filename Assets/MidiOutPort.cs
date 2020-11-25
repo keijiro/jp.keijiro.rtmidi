@@ -10,10 +10,11 @@ namespace RtMidi.LowLevel
         {
             _rtmidi = RtMidiDll.OutCreateDefault();
 
+            if (_rtmidi != null && _rtmidi->ok)
+                RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi Out");
+
             if (_rtmidi == null || !_rtmidi->ok)
                 throw new System.InvalidOperationException("Failed to set up a MIDI output port.");
-
-            RtMidiDll.OpenPort(_rtmidi, (uint)portNumber, "RtMidi Out");
         }
 
         ~MidiOutPort()
