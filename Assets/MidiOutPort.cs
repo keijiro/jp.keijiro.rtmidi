@@ -69,5 +69,12 @@ namespace RtMidi.LowLevel
         {
             SendMessage((byte)(0xb0 + channel), 120, 0);
         }
+        public void SendPitchBend(int channel, int value)
+        {
+            byte MSB = (byte)(value / 128);
+            byte LSB = (byte)((value / 128f - MSB) / 0.0078125); // 1/128 = 0.0078125
+
+            SendMessage((byte)(0xe0 + channel), LSB, MSB);
+        }
     }
 }
