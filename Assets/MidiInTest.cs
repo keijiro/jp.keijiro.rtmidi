@@ -35,7 +35,10 @@ sealed class MidiInTest : MonoBehaviour
 
                     OnControlChange = (byte channel, byte number, byte value) =>
                         Debug.Log(string.Format("{0} [{1}] CC {2} ({3})", name, channel, number, value))
-                } : null
+                                          ,
+                    OnPitchBendChange = (byte channel, byte LSB, byte MSB) =>
+                        Debug.Log(string.Format("{0} [{1}] PB {2}", name, channel,-8192 + MSB * 128 + LSB))
+            } : null
             );
         }
     }
