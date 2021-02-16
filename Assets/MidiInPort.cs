@@ -9,6 +9,7 @@ namespace RtMidi.LowLevel
         public System.Action<byte, byte, byte> OnNoteOn;
         public System.Action<byte, byte> OnNoteOff;
         public System.Action<byte, byte, byte> OnControlChange;
+        public System.Action<byte, byte, byte> OnPitchBendChange;
 
         public MidiInPort(int portNumber)
         {
@@ -67,6 +68,10 @@ namespace RtMidi.LowLevel
                 else if (status == 0xb)
                 {
                     OnControlChange?.Invoke(channel, msg[1], msg[2]);
+                }
+                else if (status == 0xe)
+                {
+                    OnPitchBendChange?.Invoke(channel, msg[1], msg[2]);
                 }
             }
         }
