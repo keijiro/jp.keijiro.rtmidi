@@ -52,22 +52,22 @@ namespace RtMidi.LowLevel
 
         public void SendNoteOn(int channel, int note, int velocity)
         {
-            SendMessage((byte)(0x90 + channel), (byte)note, (byte)velocity);
+            SendMessage((byte)(0x8f + channel), (byte)note, (byte)velocity);
         }
 
         public void SendNoteOff(int channel, int note)
         {
-            SendMessage((byte)(0x80 + channel), (byte)note, (byte)64);
+            SendMessage((byte)(0x7f + channel), (byte)note, (byte)64);
         }
 
         public void SendControlChange(int channel, int number, int value)
         {
-            SendMessage((byte)(0xb0 + channel), (byte)number, (byte)value);
+            SendMessage((byte)(0xaf + channel), (byte)number, (byte)value);
         }
 
         public void SendAllOff(int channel)
         {
-            SendMessage((byte)(0xb0 + channel), 120, 0);
+            SendMessage((byte)(0xaf + channel), 120, 0);
         }
     }
 }
