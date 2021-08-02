@@ -82,7 +82,7 @@ could work correctly. But how about 130 BPM? What if the display is refreshing
 at 50 Hz?
 
 You may have to create a separate thread and use a media-timer API or something
-llike that. However, this plugin is only tested in a non-threaded fashion. You
+like that. However, this plugin is only tested in a non-threaded fashion. You
 may have to test it on supported platforms too.
 
 There might be more things to be considered. Does it worth investing time? Or
