@@ -13,9 +13,9 @@ Desktop.ini
 *.vcxproj.user
 /RtMidi/VisualStudio/x64
 
-# Xcode
-xcuserdata
-xcshareddata
+# macOS build
+/RtMidi/macOS/*.bundle
+/RtMidi/macOS/*.so
 
 # Unity
 /Library
