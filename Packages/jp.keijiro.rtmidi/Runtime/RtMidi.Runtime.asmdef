@@ -1,7 +1,12 @@
 {
     "name": "RtMidi.Runtime",
     "references": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor",
+        "LinuxStandalone64",
+        "macOSStandalone",
+        "WindowsStandalone64"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": false,
