@@ -57,7 +57,10 @@ namespace RtMidi.LowLevel
         public string GetPortName(int port)
         {
             if (_rtmidi == null || !_rtmidi->ok) return null;
-            return Marshal.PtrToStringAnsi(RtMidiDll.GetPortName(_rtmidi, (uint)port));
+            var len = 256;
+            var buf = stackalloc byte[len];
+            RtMidiDll.GetPortName(_rtmidi, (uint)port, buf, ref len);
+            return Marshal.PtrToStringAnsi((System.IntPtr)buf);
         }
     }
 }

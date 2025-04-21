@@ -97,7 +97,7 @@ namespace RtMidi
 
         [DllImport("RtMidi.dll", EntryPoint="rtmidi_get_port_name")]
         public static extern
-        IntPtr GetPortName(Wrapper* device, uint portNumber);
+        IntPtr GetPortName(Wrapper* device, uint portNumber, byte* bufOut, ref int bufLen);
 
         // RtMidiIn API
 
