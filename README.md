@@ -1,90 +1,35 @@
-RtMidi for Unity
-================
+# RtMidi for Unity
 
-This is a wrapper library of [RtMidi] for Unity that allows Unity programs to
-access MIDI devices within C# scripts.
+**RtMidi for Unity** is a wrapper plugin of [RtMidi] that enables Unity to
+access MIDI devices from C# scripts.
 
 [RtMidi]: https://github.com/thestk/rtmidi
 
-Note that this library only provides a thin wrapper of the original C language
-implementation. There are lots of unsafe and inconvenient elements in the
-library. In other words, this is a kind of a raw device driver provided for
-plugin developers -- It's not recommended to use directly in application code.
+Note that this plugin only provides a thin wrapper around the original C API,
+which requires the use of unsafe and unmanaged code. It's not recommended to
+use this plugin directoly in application code. Instead, consider using a
+high-level library like [Minis].
 
-System Requirements
--------------------
+[Minis]: https://github.com/keijiro/Minis
 
-- Unity 2019.1 or later
-- Windows, macOS or Linux
-- Only supports 64-bit architecture
+## System Requirements
 
-How To Install
---------------
+- Unity 2022.3 LTS or later
 
-This package uses the [scoped registry] feature to resolve package
-dependencies. Please add the following sections to the manifest file
-(Packages/manifest.json).
+Currently, RtMidi for Unity supports only desktop platforms (Windows, macOS,
+and Linux).
 
-[scoped registry]: https://docs.unity3d.com/Manual/upm-scoped.html
+## Installation
 
-To the `scopedRegistries` section:
+You can install the RtMidi for Unity package (`jp.keijiro.rtmidi`) via the
+"Keijiro" scoped registry using the Unity Package Manager. To add the registry
+to your project, follow [these instructions].
 
-```
-{
-  "name": "Keijiro",
-  "url": "https://registry.npmjs.com",
-  "scopes": [ "jp.keijiro" ]
-}
-```
+[these instructions]:
+  https://gist.github.com/keijiro/f8c7e8ff29bfe63d86b888901b82644c
 
-To the `dependencies` section:
+## Samples
 
-```
-"jp.keijiro.rtmidi": "1.0.4"
-```
-
-After changes, the manifest file should look like below:
-
-```
-{
-  "scopedRegistries": [
-    {
-      "name": "Keijiro",
-      "url": "https://registry.npmjs.com",
-      "scopes": [ "jp.keijiro" ]
-    }
-  ],
-  "dependencies": {
-    "jp.keijiro.rtmidi": "1.0.4",
-    ...
-```
-
-Examples
---------
-
-There is an example implementation of low-level wrapper class for using the
-plugin to input/output MIDI messages. Please see the script files under the
-Assets directory in this repository for details.
-
-Frequently Asked Questions
---------------------------
-
-#### Nice! So is it possible to implement a music sequencer with Unity?
-
-Unfortunately, it's quite hard -- I'd say it's almost impossible.
-
-The script behaviors in Unity are hard-locked to screen refreshing. Due to this
-limitation, you can't achieve enough temporal resolution that is required to
-keep a correct tempo.
-
-If the display is refreshing at 60 Hz, and the tempo of the song is 120 BPM, it
-could work correctly. But how about 130 BPM? What if the display is refreshing
-at 50 Hz?
-
-You may have to create a separate thread and use a media-timer API or something
-like that. However, this plugin is only tested in a non-threaded fashion. You
-may have to test it on supported platforms too.
-
-There might be more things to be considered. Does it worth investing time? Or
-isn't it better to create a new plugin from scratch? There is no clear yes/no
-answer to it. I just think it's quite hard.
+This repository includes a sample implementation of a low-level wrapper class
+for sending and receiving MIDI messages via the plugin.Please refer to the
+script files in the `Assets` directory for more details.
