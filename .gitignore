@@ -1,23 +1,26 @@
-# Windows
 Thumbs.db
 Desktop.ini
-
-# macOS
 .DS_Store
-
-# Vim
 *.swp
 
-# Visual Studio
+/Library
+/Logs
+/Recordings
+/Temp
+/UIElementsSchema
+/UserSettings
+
+/.utmp
+/mono_crash.*.json
+/Xcode
+
+/*.app
+/*.exe
+/*.apk
+/*_DoNotShip
+
 .vs
 *.vcxproj.user
 /RtMidi/VisualStudio/x64
-
-# macOS build
 /RtMidi/macOS/*.bundle
 /RtMidi/macOS/*.so
-
-# Unity
-/Library
-/Logs
-/Temp
