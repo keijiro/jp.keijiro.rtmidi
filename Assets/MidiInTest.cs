@@ -1,23 +1,19 @@
 using UnityEngine;
 using System.Collections.Generic;
-using RtMidi.LowLevel;
+using RtMidi;
+using System;
 
 sealed class MidiInTest : MonoBehaviour
 {
     #region Private members
 
-    MidiProbe _probe;
-    List<MidiInPort> _ports = new List<MidiInPort>();
+    MidiIn _probe;
+    List<(MidiIn dev, string name)> _ports = new List<(MidiIn, string)>();
 
-    // Does the port seem real or not?
-    // This is mainly used on Linux (ALSA) to filter automatically generated
-    // virtual ports.
+    // Port name check
     bool IsRealPort(string name)
-    {
-        return !name.Contains("Through") && !name.Contains("RtMidi");
-    }
+      => !name.Contains("Through") && !name.Contains("RtMidi");
 
-    // Scan and open all the available output ports.
     void ScanPorts()
     {
         for (var i = 0; i < _probe.PortCount; i++)
@@ -25,26 +21,54 @@ sealed class MidiInTest : MonoBehaviour
             var name = _probe.GetPortName(i);
             Debug.Log("MIDI-in port found: " + name);
 
-            _ports.Add(IsRealPort(name) ? new MidiInPort(i)
-                {
-                    OnNoteOn = (byte channel, byte note, byte velocity) =>
-                        Debug.Log(string.Format("{0} [{1}] On {2} ({3})", name, channel, note, velocity)),
-
-                    OnNoteOff = (byte channel, byte note) =>
-                        Debug.Log(string.Format("{0} [{1}] Off {2}", name, channel, note)),
-
-                    OnControlChange = (byte channel, byte number, byte value) =>
-                        Debug.Log(string.Format("{0} [{1}] CC {2} ({3})", name, channel, number, value))
-                } : null
-            );
+            var dev = new MidiIn();
+            dev.OpenPort(i, "RtMidi Input");
+            _ports.Add((dev, name));
         }
     }
 
-    // Close and release all the opened ports.
     void DisposePorts()
     {
-        foreach (var p in _ports) p?.Dispose();
+        foreach (var p in _ports) p.dev?.Dispose();
         _ports.Clear();
+    }
+
+    void UpdatePort(MidiIn dev, string name)
+    {
+        if (dev == null) return;
+        unsafe
+        {
+            var buffer = (Span<byte>)(stackalloc byte[32]);
+            double time;
+            while (true)
+            {
+                var read = dev.GetMessage(buffer, out time);
+                if (read.Length == 0) return;
+                ProcessMessages(read, name);
+            }
+        }
+    }
+
+    void ProcessMessages(ReadOnlySpan<byte> msg, string name)
+    {
+        var status = (byte)(msg[0] >> 4);
+        var channel = (byte)(msg[0] & 0xf);
+
+        if (status == 9)
+        {
+            if (msg[2] > 0)
+                Debug.Log(string.Format("{0} [{1}] On {2} ({3})", name, channel, msg[1], msg[2]));
+            else
+                Debug.Log(string.Format("{0} [{1}] Off {2}", name, channel, msg[1]));
+        }
+        else if (status == 8)
+        {
+            Debug.Log(string.Format("{0} [{1}] Off {2}", name, channel, msg[1]));
+        }
+        else if (status == 0xb)
+        {
+            Debug.Log(string.Format("{0} [{1}] CC {2} ({3})", name, channel, msg[1], msg[2]));
+        }
     }
 
     #endregion
@@ -52,21 +76,17 @@ sealed class MidiInTest : MonoBehaviour
     #region MonoBehaviour implementation
 
     void Start()
-    {
-        _probe = new MidiProbe(MidiProbe.Mode.In);
-    }
+      => _probe = new MidiIn();
 
     void Update()
     {
-        // Rescan when the number of ports changed.
         if (_ports.Count != _probe.PortCount)
         {
             DisposePorts();
             ScanPorts();
         }
 
-        // Process queued messages in the opened ports.
-        foreach (var p in _ports) p?.ProcessMessages();
+        foreach (var p in _ports) UpdatePort(p.dev, p.name);
     }
 
     void OnDestroy()
