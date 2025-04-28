@@ -12,7 +12,10 @@ public unsafe class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
     public MidiIn() : base(true)
       => handle = _CreateDefault();
 
-    public MidiIn(Api api, string clientName, int queueSizeLimit) : base(true)
+    public MidiIn(Api api = Api.Unspecified,
+                  string clientName = "RtMidi Input Client",
+                  int queueSizeLimit = 100)
+      : base(true)
       => handle = _Create(api, clientName, (uint)queueSizeLimit);
 
     protected override bool ReleaseHandle()
@@ -34,16 +37,16 @@ public unsafe class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
 
     #region Public methods
 
-    public void OpenPort(int portNumber, string portName)
+    public void OpenPort(int portNumber = 0, string portName = "RtMidi")
       => _OpenPort(this, (uint)portNumber, portName);
 
-    public void OpenVirtualPort(string portName)
+    public void OpenVirtualPort(string portName = "RtMidi")
       => _OpenVirtualPort(this, portName);
 
     public void ClosePort()
       => _ClosePort(this);
 
-    public unsafe string GetPortName(int portNumber)
+    public unsafe string GetPortName(int portNumber = 0)
     {
         var buflen = 256;
         _GetPortName(this, (uint)portNumber, IntPtr.Zero, ref buflen);
@@ -53,7 +56,7 @@ public unsafe class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
         return Marshal.PtrToStringAnsi((IntPtr)buf);
     }
 
-    public void SetIgnoreTypes(bool sysex, bool time, bool sense)
+    public void IgnoreTypes(bool sysex = true, bool time = true, bool sense = true)
       => _IgnoreTypes(this, sysex, time, sense);
 
     public ReadOnlySpan<byte> GetMessage(Span<byte> buffer, out double time)

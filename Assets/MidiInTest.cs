@@ -22,7 +22,7 @@ sealed class MidiInTest : MonoBehaviour
             Debug.Log("MIDI-in port found: " + name);
 
             var dev = new MidiIn();
-            dev.OpenPort(i, "RtMidi Input");
+            dev.OpenPort(i);
             _ports.Add((dev, name));
         }
     }

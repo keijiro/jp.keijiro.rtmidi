@@ -12,7 +12,9 @@ public unsafe class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
     public MidiOut() : base(true)
       => handle = _CreateDefault();
 
-    public MidiOut(Api api, string clientName) : base(true)
+    public MidiOut(Api api = Api.Unspecified,
+                   string clientName = "RtMidi Output Client")
+      : base(true)
       => handle = _Create(api, clientName);
 
     protected override bool ReleaseHandle()
@@ -34,16 +36,16 @@ public unsafe class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
 
     #region Public methods
 
-    public void OpenPort(int portNumber, string portName)
+    public void OpenPort(int portNumber = 0, string portName = "RtMidi")
       => _OpenPort(this, (uint)portNumber, portName);
 
-    public void OpenVirtualPort(string portName)
+    public void OpenVirtualPort(string portName = "RtMidi")
       => _OpenVirtualPort(this, portName);
 
     public void ClosePort()
       => _ClosePort(this);
 
-    public unsafe string GetPortName(int portNumber)
+    public unsafe string GetPortName(int portNumber = 0)
     {
         var buflen = 256;
         _GetPortName(this, (uint)portNumber, IntPtr.Zero, ref buflen);
