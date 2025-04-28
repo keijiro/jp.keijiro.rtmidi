@@ -10,20 +10,14 @@ sealed class MidiInTest : MonoBehaviour
     MidiIn _probe;
     List<(MidiIn dev, string name)> _ports = new List<(MidiIn, string)>();
 
-    // Port name check
-    bool IsRealPort(string name)
-      => !name.Contains("Through") && !name.Contains("RtMidi");
-
     void ScanPorts()
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
-            var name = _probe.GetPortName(i);
-            Debug.Log("MIDI-in port found: " + name);
-
-            var dev = new MidiIn();
+            var (dev, name) = (new MidiIn(), _probe.GetPortName(i));
             dev.OpenPort(i);
             _ports.Add((dev, name));
+            Debug.Log($"MIDI-in port opened: {name}");
         }
     }
 
@@ -53,22 +47,17 @@ sealed class MidiInTest : MonoBehaviour
     {
         var status = (byte)(msg[0] >> 4);
         var channel = (byte)(msg[0] & 0xf);
+        var (d1, d2) = (msg[1], msg[2]);
 
-        if (status == 9)
+        var text = status switch
         {
-            if (msg[2] > 0)
-                Debug.Log(string.Format("{0} [{1}] On {2} ({3})", name, channel, msg[1], msg[2]));
-            else
-                Debug.Log(string.Format("{0} [{1}] Off {2}", name, channel, msg[1]));
-        }
-        else if (status == 8)
-        {
-            Debug.Log(string.Format("{0} [{1}] Off {2}", name, channel, msg[1]));
-        }
-        else if (status == 0xb)
-        {
-            Debug.Log(string.Format("{0} [{1}] CC {2} ({3})", name, channel, msg[1], msg[2]));
-        }
+            0x8 => $"Note Off {d1}",
+            0x9 => msg[2] > 0 ? $"Note On {d1} ({d2})" : $"Note Off {d1}",
+            0xb => $"CC {d1} ({d2})",
+            _ => null
+        };
+
+        if (text != null) Debug.Log($"{name} [{channel}] {text}");
     }
 
     #endregion

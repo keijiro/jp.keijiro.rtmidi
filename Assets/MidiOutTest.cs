@@ -10,20 +10,14 @@ sealed class MidiOutTest : MonoBehaviour
     MidiOut _probe;
     List<(MidiOut dev, string name)> _ports = new List<(MidiOut, string)>();
 
-    // Port name check
-    bool IsRealPort(string name)
-      => !name.Contains("Through") && !name.Contains("RtMidi");
-
     void ScanPorts()
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
-            var name = _probe.GetPortName(i);
-            Debug.Log("MIDI-out port found: " + name);
-
-            var dev = new MidiOut();
+            var (dev, name) = (new MidiOut(), _probe.GetPortName(i));
             dev.OpenPort(i);
             _ports.Add((dev, name));
+            Debug.Log($"MIDI-out port opened: {name}");
         }
     }
 
