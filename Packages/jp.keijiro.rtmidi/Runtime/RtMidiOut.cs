@@ -47,7 +47,7 @@ public unsafe class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
 
     public unsafe string GetPortName(int portNumber = 0)
     {
-        var buflen = 256;
+        var buflen = 0;
         _GetPortName(this, (uint)portNumber, IntPtr.Zero, ref buflen);
         buflen = System.Math.Clamp(buflen, 1, 256);
         var buf = stackalloc byte[buflen];
