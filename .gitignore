@@ -22,5 +22,7 @@ Desktop.ini
 .vs
 *.vcxproj.user
 /RtMidi/VisualStudio/x64
+/RtMidi/iOS/*.o
+/RtMidi/iOS/*.a
 /RtMidi/macOS/*.bundle
 /RtMidi/macOS/*.so
