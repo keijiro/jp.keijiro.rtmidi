@@ -86,8 +86,15 @@ public class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
 
     unsafe void BridgeCallback(double time, IntPtr ptr, nuint size, IntPtr _)
     {
-        var span = new ReadOnlySpan<byte>(ptr.ToPointer(), (int)size);
-        if (_messageReceived != null) _messageReceived(time, span);
+        try
+        {
+            var span = new ReadOnlySpan<byte>(ptr.ToPointer(), (int)size);
+            if (_messageReceived != null) _messageReceived(time, span);
+        }
+        catch (Exception e)
+        {
+            UnityEngine.Debug.LogError($"Exception in MIDI callback: {e}");
+        }
     }
 
     void SetBridgeCallback(MessageReceivedHandler handler)
