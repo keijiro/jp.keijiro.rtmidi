@@ -14,7 +14,7 @@ sealed class MidiInCallbackTest : MonoBehaviour
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
-            var (dev, name) = (new MidiIn(), _probe.GetPortName(i));
+            var (dev, name) = (MidiIn.Create(), _probe.GetPortName(i));
             dev.OpenPort(i);
             dev.MessageReceived = (t, msg) => OnMessageReceived(msg, name);
             _ports.Add((dev, name));
@@ -50,7 +50,7 @@ sealed class MidiInCallbackTest : MonoBehaviour
     #region MonoBehaviour implementation
 
     void Start()
-      => _probe = new MidiIn();
+      => _probe = MidiIn.Create();
 
     void Update()
     {

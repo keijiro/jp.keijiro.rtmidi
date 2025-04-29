@@ -14,7 +14,7 @@ sealed class MidiOutTest : MonoBehaviour
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
-            var (dev, name) = (new MidiOut(), _probe.GetPortName(i));
+            var (dev, name) = (MidiOut.Create(), _probe.GetPortName(i));
             dev.OpenPort(i);
             _ports.Add((dev, name));
             Debug.Log($"MIDI-out port opened: {name}");
@@ -45,7 +45,7 @@ sealed class MidiOutTest : MonoBehaviour
 
     async Awaitable Start()
     {
-        _probe = new MidiOut();
+        _probe = MidiOut.Create();
 
         await Awaitable.WaitForSecondsAsync(0.1f);
 

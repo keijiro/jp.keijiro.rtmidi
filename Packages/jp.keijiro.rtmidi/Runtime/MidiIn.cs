@@ -7,16 +7,22 @@ namespace RtMidi {
 // MIDI-in device handler
 public class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
 {
+    #region Factory methods
+
+    public static MidiIn Create()
+      => new MidiIn(_CreateDefault());
+
+    public static MidiIn Create(Api api = Api.Unspecified,
+                                string clientName = "RtMidi Input Client",
+                                int queueSizeLimit = 100)
+      => new MidiIn(_Create(api, clientName, (uint)queueSizeLimit));
+
+    #endregion
+
     #region SafeHandle implementation
 
-    public MidiIn() : base(ownsHandle: true)
-      => handle = _CreateDefault();
-
-    public MidiIn(Api api = Api.Unspecified,
-                  string clientName = "RtMidi Input Client",
-                  int queueSizeLimit = 100)
-      : base(ownsHandle: true)
-      => handle = _Create(api, clientName, (uint)queueSizeLimit);
+    MidiIn(IntPtr ptr) : base(ownsHandle: true)
+      => SetHandle(ptr);
 
     protected override bool ReleaseHandle()
     {

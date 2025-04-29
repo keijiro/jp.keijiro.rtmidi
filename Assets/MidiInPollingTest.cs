@@ -14,7 +14,7 @@ sealed class MidiInPollingTest : MonoBehaviour
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
-            var (dev, name) = (new MidiIn(), _probe.GetPortName(i));
+            var (dev, name) = (MidiIn.Create(), _probe.GetPortName(i));
             dev.OpenPort(i);
             _ports.Add((dev, name));
             Debug.Log($"MIDI-in port opened: {name}");
@@ -65,7 +65,7 @@ sealed class MidiInPollingTest : MonoBehaviour
     #region MonoBehaviour implementation
 
     void Start()
-      => _probe = new MidiIn();
+      => _probe = MidiIn.Create();
 
     void Update()
     {

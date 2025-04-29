@@ -7,15 +7,21 @@ namespace RtMidi {
 // MIDI-out device handler
 public class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
 {
+    #region Factory methods
+
+    public static MidiOut Create()
+      => new MidiOut(_CreateDefault());
+
+    public static MidiOut Create(Api api = Api.Unspecified,
+                                 string clientName = "RtMidi Output Client")
+      => new MidiOut(_Create(api, clientName));
+
+    #endregion
+
     #region SafeHandle implementation
 
-    public MidiOut() : base(ownsHandle: true)
-      => handle = _CreateDefault();
-
-    public MidiOut(Api api = Api.Unspecified,
-                   string clientName = "RtMidi Output Client")
-      : base(ownsHandle: true)
-      => handle = _Create(api, clientName);
+    MidiOut(IntPtr ptr) : base(ownsHandle: true)
+      => SetHandle(ptr);
 
     protected override bool ReleaseHandle()
     {
