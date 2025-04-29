@@ -9,13 +9,13 @@ public class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
 {
     #region SafeHandle implementation
 
-    public MidiIn() : base(true)
+    public MidiIn() : base(ownsHandle: true)
       => handle = _CreateDefault();
 
     public MidiIn(Api api = Api.Unspecified,
                   string clientName = "RtMidi Input Client",
                   int queueSizeLimit = 100)
-      : base(true)
+      : base(ownsHandle: true)
       => handle = _Create(api, clientName, (uint)queueSizeLimit);
 
     protected override bool ReleaseHandle()

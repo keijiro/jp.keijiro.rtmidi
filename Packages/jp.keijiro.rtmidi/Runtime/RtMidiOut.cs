@@ -9,12 +9,12 @@ public class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
 {
     #region SafeHandle implementation
 
-    public MidiOut() : base(true)
+    public MidiOut() : base(ownsHandle: true)
       => handle = _CreateDefault();
 
     public MidiOut(Api api = Api.Unspecified,
                    string clientName = "RtMidi Output Client")
-      : base(true)
+      : base(ownsHandle: true)
       => handle = _Create(api, clientName);
 
     protected override bool ReleaseHandle()
