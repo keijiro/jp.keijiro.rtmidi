@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace RtMidi {
 
 // MIDI-out device handler
-public unsafe class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
+public class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
 {
     #region SafeHandle implementation
 
@@ -55,7 +55,7 @@ public unsafe class MidiOut : SafeHandleZeroOrMinusOneIsInvalid
         return Marshal.PtrToStringAnsi((IntPtr)buf);
     }
 
-    public int SendMessage(ReadOnlySpan<byte> message)
+    public unsafe int SendMessage(ReadOnlySpan<byte> message)
     {
         fixed (byte* ptr = message)
             return _SendMessage(this, (IntPtr)ptr, message.Length);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using RtMidi;
 using System;
 
-sealed class MidiInTest : MonoBehaviour
+sealed class MidiInCallbackTest : MonoBehaviour
 {
     #region Private members
 
@@ -16,6 +16,7 @@ sealed class MidiInTest : MonoBehaviour
         {
             var (dev, name) = (new MidiIn(), _probe.GetPortName(i));
             dev.OpenPort(i);
+            dev.MessageReceived = (t, msg) => OnMessageReceived(msg, name);
             _ports.Add((dev, name));
             Debug.Log($"MIDI-in port opened: {name}");
         }
@@ -27,23 +28,7 @@ sealed class MidiInTest : MonoBehaviour
         _ports.Clear();
     }
 
-    void UpdatePort(MidiIn dev, string name)
-    {
-        if (dev == null) return;
-        unsafe
-        {
-            var buffer = (Span<byte>)(stackalloc byte[32]);
-            double time;
-            while (true)
-            {
-                var read = dev.GetMessage(buffer, out time);
-                if (read.Length == 0) return;
-                ProcessMessages(read, name);
-            }
-        }
-    }
-
-    void ProcessMessages(ReadOnlySpan<byte> msg, string name)
+    void OnMessageReceived(ReadOnlySpan<byte> msg, string name)
     {
         var status = (byte)(msg[0] >> 4);
         var channel = (byte)(msg[0] & 0xf);
@@ -74,8 +59,6 @@ sealed class MidiInTest : MonoBehaviour
             DisposePorts();
             ScanPorts();
         }
-
-        foreach (var p in _ports) UpdatePort(p.dev, p.name);
     }
 
     void OnDestroy()

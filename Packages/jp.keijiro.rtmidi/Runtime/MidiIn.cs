@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace RtMidi {
 
 // MIDI-in device handler
-public unsafe class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
+public class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
 {
     #region SafeHandle implementation
 
@@ -33,6 +33,12 @@ public unsafe class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
     public Api CurrentApi => _GetCurrentApi(this);
     public int PortCount => (int)_GetPortCount(this);
 
+    public delegate void MessageReceivedHandler
+      (double time, ReadOnlySpan<byte> data);
+
+    public MessageReceivedHandler MessageReceived
+      { get => _messageReceived; set => SetBridgeCallback(value); }
+
     #endregion
 
     #region Public methods
@@ -59,12 +65,50 @@ public unsafe class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
     public void IgnoreTypes(bool sysex = true, bool time = true, bool sense = true)
       => _IgnoreTypes(this, sysex, time, sense);
 
-    public ReadOnlySpan<byte> GetMessage(Span<byte> buffer, out double time)
+    public unsafe ReadOnlySpan<byte> GetMessage(Span<byte> buffer, out double time)
     {
         var size = (nuint)buffer.Length;
         fixed (byte* ptr = buffer)
             time = _GetMessage(this, (IntPtr)ptr, ref size);
         return buffer.Slice(0, (int)size);
+    }
+
+    #endregion
+
+    #region Message callback handling
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    delegate void MidiCallback
+      (double timeStamp, IntPtr message, nuint messageSize, IntPtr userData);
+
+    MessageReceivedHandler _messageReceived;
+    MidiCallback _bridgeCallback;
+
+    unsafe void BridgeCallback(double time, IntPtr ptr, nuint size, IntPtr _)
+    {
+        var span = new ReadOnlySpan<byte>(ptr.ToPointer(), (int)size);
+        if (_messageReceived != null) _messageReceived(time, span);
+    }
+
+    void SetBridgeCallback(MessageReceivedHandler handler)
+    {
+        _messageReceived = handler;
+        if (handler != null)
+        {
+            if (_bridgeCallback == null)
+            {
+                _bridgeCallback = BridgeCallback;
+                _SetCallback(this, _bridgeCallback, IntPtr.Zero);
+            }
+        }
+        else
+        {
+            if (_bridgeCallback != null)
+            {
+                _bridgeCallback = null;
+                _CancelCallback(this);
+            }
+        }
     }
 
     #endregion
@@ -82,6 +126,12 @@ public unsafe class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
 
     [DllImport(Config.DllName, EntryPoint = "rtmidi_in_get_current_api")]
     static extern Api _GetCurrentApi(MidiIn device);
+
+    [DllImport(Config.DllName, EntryPoint = "rtmidi_in_set_callback")]
+    static extern void _SetCallback(MidiIn device, MidiCallback callback, IntPtr userData);
+
+    [DllImport(Config.DllName, EntryPoint = "rtmidi_in_cancel_callback")]
+    static extern void _CancelCallback(MidiIn device);
 
     [DllImport(Config.DllName, EntryPoint = "rtmidi_in_ignore_types")]
     static extern void _IgnoreTypes
