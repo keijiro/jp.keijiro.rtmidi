@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using UnityEngine;
 using Unity.Properties;
 using RtMidi;
@@ -14,7 +15,7 @@ sealed class MidiInTest : MonoBehaviour
 
     #region Logging
 
-    Queue<string> _logLines = new Queue<string>();
+    ConcurrentQueue<string> _logLines = new ConcurrentQueue<string>();
 
     [CreateProperty]
     public string InfoText => string.Join("\n", _logLines);
@@ -22,7 +23,8 @@ sealed class MidiInTest : MonoBehaviour
     void AddLog(string line)
     {
         _logLines.Enqueue(line);
-        while (_logLines.Count > 100) _logLines.Dequeue();
+        string temp;
+        while (_logLines.Count > 100) _logLines.TryDequeue(out temp);
     }
 
     #endregion
