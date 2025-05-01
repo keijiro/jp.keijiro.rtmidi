@@ -11,7 +11,11 @@
     <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
         <ui:VisualElement style="flex-grow: 1; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
             <ui:Label text="Input" style="-unity-font-style: bold;" />
-            <ui:Label text="--" name="input-text" data-source-type="MidiInPollingTest, Assembly-CSharp" style="overflow: hidden; -unity-text-align: lower-left;" />
+            <ui:Label text="--" name="input-text" data-source-type="MidiInPollingTest, Assembly-CSharp" style="overflow: hidden; -unity-text-align: lower-left;">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="InfoText" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
         </ui:VisualElement>
         <ui:VisualElement style="flex-grow: 1; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
             <ui:Label text="Output" style="-unity-font-style: bold;" />
