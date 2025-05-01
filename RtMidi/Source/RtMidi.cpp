@@ -4855,27 +4855,27 @@ static std::vector<jobject> androidMidiDevices;
 //  Class Definitions: MidiInAndroid
 //*********************************************************************//
 
-static JNIEnv* androidGetThreadEnv() {
-  // Every Android app has only one JVM. Calling JNI_GetCreatedJavaVMs
-  // will retrieve the JVM running the app.
-  jsize jvmsFound = 0;
-  JavaVM jvms[1];
-  JavaVM* pjvms = jvms;
-  jint result = JNI_GetCreatedJavaVMs(&pjvms, 1, &jvmsFound);
+static JavaVM* s_javaVM;
 
-  // Something went terribly wrong, no JVM was found
-  if (jvmsFound != 1 || result != JNI_OK) {
-      LOGE("No JVM found");
+jint JNI_OnLoad(JavaVM* vm, void*)
+{
+    s_javaVM = vm;
+    return JNI_VERSION_1_6;
+}
+
+static JNIEnv* androidGetThreadEnv() {
+  if (s_javaVM == NULL) {
+      LOGE("JavaVM not initialized");
       return NULL;
   }
 
   // Get the JNIEnv for the current thread
   JNIEnv* env = NULL;
-  int rc = pjvms->GetEnv((void**)&env, JNI_VERSION_1_6);
+  int rc = s_javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
 
   // The current thread was not attached to the JVM. Add it to the JVM
   if (rc == JNI_EDETACHED) {
-      pjvms->AttachCurrentThreadAsDaemon(&env, NULL);
+      s_javaVM->AttachCurrentThreadAsDaemon(&env, NULL);
   }
 
   // Neither way to retrieve the JNIEnv worked
