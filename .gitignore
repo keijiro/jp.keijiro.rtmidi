@@ -21,6 +21,9 @@ Desktop.ini
 
 .vs
 *.vcxproj.user
+
+/RtMidi/Android/*.o
+/RtMidi/Android/*.so
 /RtMidi/iOS/*.o
 /RtMidi/iOS/*.a
 /RtMidi/macOS/*.bundle
