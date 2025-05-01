@@ -6,54 +6,93 @@ using RtMidi;
 
 sealed class MidiOutTest : MonoBehaviour
 {
-    #region UI interface
+    #region Logging
+
+    Queue<string> _logLines = new Queue<string>();
 
     [CreateProperty]
-    public string InfoText => string.Join("\n", _infoLines);
-
-    Queue<string> _infoLines = new Queue<string>();
+    public string InfoText => string.Join("\n", _logLines);
 
     void AddLog(string line)
     {
-        _infoLines.Enqueue(line);
-        while (_infoLines.Count > 100) _infoLines.Dequeue();
+        _logLines.Enqueue(line);
+        while (_logLines.Count > 100) _logLines.Dequeue();
     }
 
     #endregion
 
-    #region Private members
+    #region MIDI port open/close
 
     MidiOut _probe;
     List<(MidiOut dev, string name)> _ports = new List<(MidiOut, string)>();
 
-    void ScanPorts()
+    void OpenAvailablePorts()
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
             var (dev, name) = (MidiOut.Create(), _probe.GetPortName(i));
             dev.OpenPort(i);
             _ports.Add((dev, name));
-            AddLog($"MIDI-out port opened: {name}");
+            AddLog($"Port opened: {name}");
         }
     }
 
-    void DisposePorts()
+    void CloseAllPorts()
     {
-        foreach (var p in _ports) p.dev?.Dispose();
+        foreach (var p in _ports) p.dev.Dispose();
         _ports.Clear();
     }
 
+    #endregion
+
+    #region MIDI sequence sender
+
+    async Awaitable SendMidiSequenceAsync()
+    {
+        const float interval = 0.1f;
+        await Awaitable.WaitForSecondsAsync(interval);
+
+        foreach (var port in _ports)
+            SendAllOff(port.dev, 0);
+
+        for (var i = 0; true; i++)
+        {
+            var note = 40 + (i % 30);
+
+            AddLog("Note-On " + note);
+            foreach (var port in _ports)
+                SendNoteOn(port.dev, 0, note, 100);
+
+            await Awaitable.WaitForSecondsAsync(interval);
+
+            AddLog("Note-Off " + note);
+            foreach (var port in _ports)
+                SendNoteOff(port.dev, 0, note);
+
+            await Awaitable.WaitForSecondsAsync(interval);
+        }
+    }
+
     unsafe void SendNoteOn(MidiOut dev, int channel, int note, int velocity)
-      => dev.SendMessage((ReadOnlySpan<byte>)
-           stackalloc byte[] {(byte)(0x90 + channel), (byte)note, (byte)velocity});
+    {
+        var msg = stackalloc byte[3]
+          { (byte)(0x90 + channel), (byte)note, (byte)velocity };
+        dev.SendMessage(new ReadOnlySpan<byte>(msg, 3));
+    }
 
     unsafe void SendNoteOff(MidiOut dev, int channel, int note)
-      => dev.SendMessage((ReadOnlySpan<byte>)
-           stackalloc byte[] {(byte)(0x80 + channel), (byte)note, (byte)64});
+    {
+        var msg = stackalloc byte[3]
+          { (byte)(0x80 + channel), (byte)note, 64 };
+        dev.SendMessage(new ReadOnlySpan<byte>(msg, 3));
+    }
 
     unsafe void SendAllOff(MidiOut dev, int channel)
-      => dev.SendMessage((ReadOnlySpan<byte>)
-           stackalloc byte[] {(byte)(0xb0 + channel), 120, 0});
+    {
+        var msg = stackalloc byte[3]
+          { (byte)(0xb0 + channel), 120, 0 };
+        dev.SendMessage(new ReadOnlySpan<byte>(msg, 3));
+    }
 
     #endregion
 
@@ -62,40 +101,22 @@ sealed class MidiOutTest : MonoBehaviour
     async Awaitable Start()
     {
         _probe = MidiOut.Create();
-
-        await Awaitable.WaitForSecondsAsync(0.1f);
-
-        foreach (var port in _ports) if (port.dev != null) SendAllOff(port.dev, 0);
-
-        for (var i = 0; true; i++)
-        {
-            var note = 40 + (i % 30);
-
-            AddLog("Note On " + note);
-            foreach (var port in _ports) if (port.dev != null) SendNoteOn(port.dev, 0, note, 100);
-
-            await Awaitable.WaitForSecondsAsync(0.1f);
-
-            AddLog("Note Off " + note);
-            foreach (var port in _ports) if (port.dev != null) SendNoteOff(port.dev, 0, note);
-
-            await Awaitable.WaitForSecondsAsync(0.1f);
-        }
+        await SendMidiSequenceAsync();
     }
 
     void Update()
     {
         if (_ports.Count != _probe.PortCount)
         {
-            DisposePorts();
-            ScanPorts();
+            CloseAllPorts();
+            OpenAvailablePorts();
         }
     }
 
     void OnDestroy()
     {
+        CloseAllPorts();
         _probe?.Dispose();
-        DisposePorts();
     }
 
     #endregion
