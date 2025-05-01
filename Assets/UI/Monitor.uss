@@ -1,0 +1,4 @@
+.unity-text-element {
+    -unity-font-definition: url("project://database/Assets/UI/Inconsolata/static/Inconsolata-Light.ttf?fileID=12800000&guid=eda7dab7ed8e042a688dd2301b6c76c7&type=3#Inconsolata-Light");
+    color: rgb(255, 255, 255);
+}

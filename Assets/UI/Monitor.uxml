@@ -1,0 +1,25 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Monitor.uss?fileID=7433441132597879392&amp;guid=0bdd52608c1ae4f41a18e3351564b868&amp;type=3#Monitor" />
+    <ui:VisualElement style="margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
+        <ui:Label text="System" style="-unity-font-style: bold;" />
+        <ui:Label text="--" name="system-text" data-source-type="MidiSystemTest, Assembly-CSharp">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="InfoText" binding-mode="ToTarget" />
+            </Bindings>
+        </ui:Label>
+    </ui:VisualElement>
+    <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+        <ui:VisualElement style="flex-grow: 1; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
+            <ui:Label text="Input" style="-unity-font-style: bold;" />
+            <ui:Label text="--" name="input-text" data-source-type="MidiInPollingTest, Assembly-CSharp" style="overflow: hidden; -unity-text-align: lower-left;" />
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-grow: 1; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
+            <ui:Label text="Output" style="-unity-font-style: bold;" />
+            <ui:Label text="--" name="output-text" data-source-type="MidiOutTest, Assembly-CSharp" style="-unity-text-align: lower-left; overflow: hidden;">
+                <Bindings>
+                    <ui:DataBinding property="text" data-source-path="InfoText" binding-mode="ToTarget" />
+                </Bindings>
+            </ui:Label>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

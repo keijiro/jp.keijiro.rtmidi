@@ -1,10 +1,26 @@
-using UnityEngine;
-using System.Collections.Generic;
-using RtMidi;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Unity.Properties;
+using RtMidi;
 
 sealed class MidiOutTest : MonoBehaviour
 {
+    #region UI interface
+
+    [CreateProperty]
+    public string InfoText => string.Join("\n", _infoLines);
+
+    Queue<string> _infoLines = new Queue<string>();
+
+    void AddLog(string line)
+    {
+        _infoLines.Enqueue(line);
+        while (_infoLines.Count > 100) _infoLines.Dequeue();
+    }
+
+    #endregion
+
     #region Private members
 
     MidiOut _probe;
@@ -17,7 +33,7 @@ sealed class MidiOutTest : MonoBehaviour
             var (dev, name) = (MidiOut.Create(), _probe.GetPortName(i));
             dev.OpenPort(i);
             _ports.Add((dev, name));
-            Debug.Log($"MIDI-out port opened: {name}");
+            AddLog($"MIDI-out port opened: {name}");
         }
     }
 
@@ -55,12 +71,12 @@ sealed class MidiOutTest : MonoBehaviour
         {
             var note = 40 + (i % 30);
 
-            Debug.Log("MIDI Out: Note On " + note);
+            AddLog("Note On " + note);
             foreach (var port in _ports) if (port.dev != null) SendNoteOn(port.dev, 0, note, 100);
 
             await Awaitable.WaitForSecondsAsync(0.1f);
 
-            Debug.Log("MIDI Out: Note Off " + note);
+            AddLog("Note Off " + note);
             foreach (var port in _ports) if (port.dev != null) SendNoteOff(port.dev, 0, note);
 
             await Awaitable.WaitForSecondsAsync(0.1f);

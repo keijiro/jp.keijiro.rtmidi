@@ -1,15 +1,19 @@
 using System.Linq;
 using UnityEngine;
+using Unity.Properties;
 using RtMidi;
 
-sealed class MidiSystemTest : MonoBehaviour
+public sealed class MidiSystemTest : MonoBehaviour
 {
+    [CreateProperty]
+    public string InfoText { get; private set; }
+
     void Start()
     {
-        Debug.Log($"RtMidi version: {MidiSystem.GetVersion()}");
+        var ver = MidiSystem.GetVersion();
+        var apis = MidiSystem.GetCompiledApi().ToArray();
 
-        var apis = MidiSystem.GetCompiledApi().ToArray().
-          Select(api => MidiSystem.ApiDisplayName(api));
-        Debug.Log("Supported API: " + string.Join(",", apis));
+        InfoText =$"RtMidi version: {ver}\nSupported API: " +
+          string.Join(",", apis.Select(api => MidiSystem.ApiDisplayName(api)));
     }
 }

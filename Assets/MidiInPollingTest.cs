@@ -1,10 +1,26 @@
-using UnityEngine;
-using System.Collections.Generic;
-using RtMidi;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Unity.Properties;
+using RtMidi;
 
 sealed class MidiInPollingTest : MonoBehaviour
 {
+    #region UI interface
+
+    [CreateProperty]
+    public string InfoText => string.Join("\n", _infoLines);
+
+    Queue<string> _infoLines = new Queue<string>();
+
+    void AddLog(string line)
+    {
+        _infoLines.Enqueue(line);
+        while (_infoLines.Count > 100) _infoLines.Dequeue();
+    }
+
+    #endregion
+
     #region Private members
 
     MidiIn _probe;
@@ -17,7 +33,7 @@ sealed class MidiInPollingTest : MonoBehaviour
             var (dev, name) = (MidiIn.Create(), _probe.GetPortName(i));
             dev.OpenPort(i);
             _ports.Add((dev, name));
-            Debug.Log($"MIDI-in port opened: {name}");
+            AddLog($"MIDI-in port opened: {name}");
         }
     }
 
@@ -57,7 +73,7 @@ sealed class MidiInPollingTest : MonoBehaviour
             _ => null
         };
 
-        if (text != null) Debug.Log($"{name} [{channel}] {text}");
+        if (text != null) AddLog($"{name} [{channel}] {text}");
     }
 
     #endregion
