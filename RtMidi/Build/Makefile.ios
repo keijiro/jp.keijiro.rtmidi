@@ -1,0 +1,9 @@
+PLATFORM = iOS
+ARCH = arm64
+TARGET_TYPE = a
+MIDI_API = __MACOSX_CORE__
+
+SYSROOT = $(shell xcrun --sdk iphoneos --show-sdk-path)
+CCFLAGS = -target arm64-apple-ios --sysroot $(SYSROOT) -isysroot $(SYSROOT) -fembed-bitcode
+
+include Common.mk
