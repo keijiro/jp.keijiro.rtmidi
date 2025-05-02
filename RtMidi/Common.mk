@@ -4,8 +4,8 @@
 
 PRODUCT = RtMidi
 
-SRCS = ../Source/RtMidi.cpp \
-       ../Source/rtmidi_c.cpp
+SRCS = RtMidi.cpp \
+       rtmidi_c.cpp
 
 OBJ_DIR = build-$(PLATFORM)-$(ARCH)
 
@@ -25,10 +25,10 @@ endif
 # Compiler/linker options
 #
 
-CCFLAGS += -O2 -Wall -I.. -D RTMIDI_EXPORT -D $(MIDI_API)
+CCFLAGS += -O2 -Wall -D RTMIDI_EXPORT -D $(MIDI_API)
 
 ifeq ($(findstring clang,$(CC)), clang)
-	CCFLAGS += -Wextra
+  CCFLAGS += -Wextra
 endif
 
 #
@@ -57,7 +57,7 @@ clean:
 	rm -f $(TARGET) $(OBJS)
 
 copy: $(TARGET)
-	cp $(TARGET) ../../Packages/jp.keijiro.rtmidi/Runtime/Plugins/$(PLATFORM)
+	cp $(TARGET) ../Packages/jp.keijiro.rtmidi/Runtime/Plugins/$(PLATFORM)
 
 $(OBJ_DIR)/$(PRODUCT).dll: $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
@@ -73,7 +73,7 @@ $(OBJ_DIR)/lib$(PRODUCT).so: $(OBJS)
 $(OBJ_DIR)/lib$(PRODUCT).a: $(OBJS)
 	$(AR) -crv $@ $^
 
-$(OBJ_DIR)/%.o: ../Source/%.cpp | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
 	$(CC) $(CCFLAGS) -c -o $@ $<
 
 $(OBJ_DIR):
