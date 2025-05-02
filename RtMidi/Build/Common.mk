@@ -7,7 +7,7 @@ PRODUCT = RtMidi
 SRCS = ../Source/RtMidi.cpp \
        ../Source/rtmidi_c.cpp
 
-OBJ_DIR = $(PLATFORM)-$(ARCH)
+OBJ_DIR = build-$(PLATFORM)-$(ARCH)
 
 #
 # Intermediate/output files
@@ -60,7 +60,7 @@ copy: $(TARGET)
 	cp $(TARGET) ../../Packages/jp.keijiro.rtmidi/Runtime/Plugins/$(PLATFORM)
 
 $(OBJ_DIR)/$(PRODUCT).dll: $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(STRIP) $@
 
 $(OBJ_DIR)/lib$(PRODUCT).dylib: $(OBJS)

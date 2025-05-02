@@ -30,3 +30,4 @@ Desktop.ini
 /RtMidi/macOS/*.so
 /RtMidi/Windows/*.dll
 /RtMidi/Windows/*.o
+/RtMidi/Build/build-*
