@@ -6,7 +6,5 @@ STRIP=$BIN_PATH/llvm-strip
 CCFLAGS="-O2 -Wall -fPIC -I.. -D RTMIDI_EXPORT -D __AMIDI__"
 LDFLAGS="-shared -rdynamic -fPIC -Wl,-z,max-page-size=16384"
 LIBS="-static-libstdc++ -lamidi"
-$CC $CCFLAGS -c ../Source/RtMidi.cpp
-$CC $CCFLAGS -c ../Source/rtmidi_c.cpp
-$CC $LDFLAGS RtMidi.o rtmidi_c.o $LIBS -o libRtMidi.so
+$CC $CCFLAGS $LDFLAGS ../Source/RtMidi.cpp ../Source/rtmidi_c.cpp $LIBS -o libRtMidi.so
 $STRIP libRtMidi.so
