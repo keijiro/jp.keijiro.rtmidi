@@ -66,6 +66,10 @@ $(OBJ_DIR)/$(PRODUCT).dll: $(OBJS)
 $(OBJ_DIR)/lib$(PRODUCT).dylib: $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
+$(OBJ_DIR)/lib$(PRODUCT).so: $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(STRIP) $@
+
 $(OBJ_DIR)/lib$(PRODUCT).a: $(OBJS)
 	$(AR) -crv $@ $^
 
