@@ -4,6 +4,6 @@ TARGET_TYPE = dylib
 MIDI_API = __MACOSX_CORE__
 
 LDFLAGS = -dynamiclib
-LIBS = -lstdc++ -framework CoreAudio -framework CoreFoundation -framework CoreMidi
+LIBS = -lc++ -framework CoreAudio -framework CoreFoundation -framework CoreMidi
 
 include Common.mk
