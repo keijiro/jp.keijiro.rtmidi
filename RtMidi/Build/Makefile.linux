@@ -4,7 +4,7 @@ TARGET_TYPE = so
 MIDI_API = __LINUX_ALSA__
 
 CCFLAGS = -fPIC
-LDFLAGS = -shared -fPIC -Wl,--gc-sections
+LDFLAGS = -shared -Wl,--gc-sections
 LIBS = -lstdc++ -lasound
 
 include Common.mk
