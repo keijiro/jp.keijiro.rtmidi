@@ -1,5 +1,7 @@
 # RtMidi for Unity
 
+![gif](https://github.com/user-attachments/assets/d1387fa6-a3a2-416e-99c7-e9db17df6923)
+
 **RtMidi for Unity** is a wrapper plugin of [RtMidi] that enables Unity to
 access MIDI devices from C# scripts.
 
