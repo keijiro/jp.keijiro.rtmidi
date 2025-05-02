@@ -5124,8 +5124,7 @@ void* MidiInAndroid :: pollMidi(void* context) {
         &numBytesReceived, &timestamp);
 
     if (numMessagesReceived < 0) {
-      self->errorString_ = "MidiInAndroid::pollMidi: error receiving MIDI data";
-      self->error( RtMidiError::SYSTEM_ERROR, self->errorString_ );
+      std::cerr << "\nMidiInAndroid::pollMidi: error receiving MIDI data\n\n";
       self->reading = false;
       break;
     }
