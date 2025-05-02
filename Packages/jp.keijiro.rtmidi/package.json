@@ -7,7 +7,7 @@
     "license": "MIT",
     "name": "jp.keijiro.rtmidi",
     "repository": "github:keijiro/jp.keijiro.rtmidi",
-    "unity": "2019.1",
+    "unity": "2022.3",
     "unityRelease": "0f1",
-    "version": "1.0.4"
+    "version": "2.0.0"
 }
