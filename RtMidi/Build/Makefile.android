@@ -14,7 +14,7 @@ CC = $(BIN_PATH)/aarch64-linux-android30-clang++
 STRIP = $(BIN_PATH)/llvm-strip
 
 CCFLAGS = -fPIC
-LDFLAGS = -shared -rdynamic -fPIC -Wl,-z,max-page-size=16384
+LDFLAGS = -shared -Wl,-z,max-page-size=16384
 LIBS = -static-libstdc++ -lamidi
 
 include Common.mk
