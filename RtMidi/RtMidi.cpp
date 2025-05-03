@@ -5111,8 +5111,6 @@ void* MidiInAndroid :: pollMidi(void* context) {
   uint8_t incomingMessage[MAX_BYTES_TO_RECEIVE];
 
   while (self->reading) {
-    // AMidiOutputPort_receive is non-blocking, must poll with some sleep
-    usleep(2000);
     auto ignoreFlags = self->inputData_.ignoreFlags;
     bool& continueSysex = self->inputData_.continueSysex;
 
@@ -5183,6 +5181,9 @@ void* MidiInAndroid :: pollMidi(void* context) {
         }
       }
     }
+
+    // AMidiOutputPort_receive is non-blocking, must poll with some sleep
+    if (numMessagesReceived == 0) usleep(2000);
   }
 
   return NULL;

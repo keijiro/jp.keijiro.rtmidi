@@ -6,7 +6,7 @@ MIDI_API = __AMIDI__
 ifdef ANDROID_NDK_PATH
 NDK_PATH := $(ANDROID_NDK_PATH)
 else
-NDK_PATH := /Applications/Unity/Hub/Editor/6000.0.47f1/PlaybackEngines/AndroidPlayer/NDK/
+NDK_PATH := /Applications/Unity/Hub/Editor/6000.0.48f1/PlaybackEngines/AndroidPlayer/NDK/
 endif
 
 BIN_PATH = $(NDK_PATH)/toolchains/llvm/prebuilt/darwin-x86_64/bin
