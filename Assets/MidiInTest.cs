@@ -9,7 +9,7 @@ sealed class MidiInTest : MonoBehaviour
 {
     #region Exposed attributes
 
-    [SerializeField] bool _useCallback;
+    [SerializeField] bool _useCallback = false;
 
     #endregion
 

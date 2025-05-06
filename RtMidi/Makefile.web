@@ -1,0 +1,16 @@
+PLATFORM = Web
+ARCH = wasm
+TARGET_TYPE = a
+MIDI_API = __WEB_MIDI_API__
+
+ifndef EM_DIR
+EM_DIR := /Applications/Unity/Hub/Editor/6000.0.48f1/PlaybackEngines/WebGLSupport/BuildTools/Emscripten
+endif
+
+export EM_CONFIG := $(EM_DIR)/.emscripten
+
+BIN_PATH = $(EM_DIR)/emscripten
+CC = $(BIN_PATH)/emcc
+AR = $(BIN_PATH)/emar
+
+include Common.mk
