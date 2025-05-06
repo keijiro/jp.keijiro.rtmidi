@@ -43,3 +43,12 @@ $ export ANDROID_NDK_PATH=/path/to/ndk/dir
 $ make -f Makefile.android copy
 ```
 
+### Web
+
+Requires the Emscripten toolchain to build the library file. You can use the
+Emscripten toolchain with the Web module in the Unity Editor installation.
+
+```
+$ export EM_DIR=/path/to/emscripten
+$ make -f Makefile.web copy
+```

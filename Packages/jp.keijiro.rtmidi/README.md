@@ -25,6 +25,7 @@ combinations:
 - iOS: arm64
 - Linux: x86_64
 - Android: arm64
+- Web
 
 ## Installation
 
