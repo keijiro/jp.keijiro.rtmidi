@@ -4650,6 +4650,10 @@ extern "C" void EMSCRIPTEN_KEEPALIVE rtmidi_onMidiMessageProc( MidiInApi::RtMidi
     RtMidiIn::RtMidiCallback callback = (RtMidiIn::RtMidiCallback) data->userCallback;
     callback( message.timeStamp, &message.bytes, data->userData );
   }
+  else {
+    data->queue.push( message );
+  }
+  data->message.bytes.clear();
 }
 
 void MidiInWeb::openPort( unsigned int portNumber, const std::string &portName )
