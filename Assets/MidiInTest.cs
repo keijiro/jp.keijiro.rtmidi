@@ -69,6 +69,7 @@ sealed class MidiInTest : MonoBehaviour
             0x9 => msg[2] > 0 ? $"Note-On {d1} ({d2})" : $"Note-Off {d1}",
             0xa => $"Aftertouch {d1} ({d2})",
             0xb => $"CC {d1} ({d2})",
+            0xe => $"Pitch-Bend {(d2 * 128 + d1) / 16383.0f}",
             _ => null
         };
 
