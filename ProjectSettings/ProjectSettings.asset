@@ -165,6 +165,7 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.Keijiro.RtMidiTest
     Standalone: com.Keijiro.RtMidiTest
+    iPhone: com.Keijiro.RtMidiTest
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -178,7 +179,7 @@ PlayerSettings:
   aotOptions: 
   stripEngineCode: 1
   iPhoneStrippingLevel: 0
-  iPhoneScriptCallOptimization: 0
+  iPhoneScriptCallOptimization: 1
   ForceInternetPermission: 0
   ForceSDCardPermission: 0
   CreateWallpaper: 0
@@ -567,6 +568,9 @@ PlayerSettings:
   - serializedVersion: 3
     m_BuildTarget: WebGL
     m_Formats: 05000000
+  - serializedVersion: 3
+    m_BuildTarget: iOS
+    m_Formats: 03000000
   playModeTestRunnerEnabled: 0
   runPlayModeTestAsEditModeTest: 0
   actionOnDotNetUnhandledException: 1
@@ -843,6 +847,7 @@ PlayerSettings:
     Android: 1
     Standalone: 1
     WebGL: 1
+    iPhone: 1
   il2cppStacktraceInformation: {}
   managedStrippingLevel:
     Android: 3
@@ -859,7 +864,7 @@ PlayerSettings:
     WebGL: 3
     Windows Store Apps: 1
     XboxOne: 1
-    iPhone: 1
+    iPhone: 3
     tvOS: 1
   incrementalIl2cppBuild: {}
   suppressCommonWarnings: 0
