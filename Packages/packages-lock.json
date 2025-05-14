@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.unity.mobile.android-logcat": {
+      "version": "1.4.5",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "jp.keijiro.rtmidi": {
       "version": "file:jp.keijiro.rtmidi",
       "depth": 0,
