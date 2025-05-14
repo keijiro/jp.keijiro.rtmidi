@@ -61,7 +61,8 @@ sealed class MidiInTest : MonoBehaviour
     {
         var status = (byte)(msg[0] >> 4);
         var channel = (byte)(msg[0] & 0xf);
-        var (d1, d2) = (msg[1], msg[2]);
+        var d1 = msg.Length > 1 ? msg[1] : 0;
+        var d2 = msg.Length > 2 ? msg[2] : 0;
 
         var text = status switch
         {
