@@ -5131,51 +5131,59 @@ void* MidiInAndroid :: pollMidi(void* context) {
       break;
     }
 
-    switch (incomingMessage[0]) {
-      case 0xF0:
-        // Start of a SysEx message
-        continueSysex = incomingMessage[numBytesReceived - 1] != 0xF7;
-            if (ignoreFlags & 0x01) continue;
-            break;
-      case 0xF1:
-      case 0xF8:
-        // MIDI Time Code or Timing Clock message
-        if (ignoreFlags & 0x02) continue;
-            break;
-      case 0xFE:
-        // Active Sensing message
-        if (ignoreFlags & 0x04) continue;
-            break;
-      default:
-        if (continueSysex) {
-          // Continuation of a SysEx message
-          continueSysex = incomingMessage[numBytesReceived - 1] != 0xF7;
-          if (ignoreFlags & 0x01) continue;
-        }
-            // All other MIDI messages
+    // AMidiOutputPort_receive is non-blocking, must poll with some sleep
+    if (numMessagesReceived == 0 || numBytesReceived == 0) {
+      usleep(2000);
+      continue;
     }
 
-    if (numMessagesReceived > 0 && numBytesReceived >= 0) {
-      auto message = self->inputData_.message;
+    auto& message = self->inputData_.message;
 
-      if (self->inputData_.firstMessage == true) {
-        message.timeStamp = 0.0;
-        self->inputData_.firstMessage = false;
-      } else {
-        message.timeStamp = (timestamp * 0.000001) - self->lastTime;
+    // Parse the byte stream, which may contain one or more MIDI messages.
+    for (unsigned int offs = 0; offs < numBytesReceived;) {
+      auto byte = incomingMessage[offs];
+
+      // Accept the byte if:
+      // - It's the beginning of a new message (status byte)
+      // - It's a data byte (MSB == 0)
+      // - It marks the end of a Sysex message.
+      if (message.bytes.size() == 0 || byte < 0x80 || byte == 0xF7) {
+        message.bytes.push_back(byte);
+        offs++;
+
+        // Update the SysEx continuation flag
+        if (byte == 0xF0) continueSysex = true;
+        if (byte == 0xF7) continueSysex = false;
+
+        // Continue parsing if there are more bytes or the SysEx is ongoing.
+        if (offs < numBytesReceived || continueSysex) continue;
       }
-      self->lastTime = (timestamp * 0.000001);
 
-      if (!continueSysex) message.bytes.clear();
+      // At this point, message.bytes is expected to contain one complete MIDI message.
 
-      if ( !( ( continueSysex || incomingMessage[0] == 0xF0 ) && ( ignoreFlags & 0x01 ) ) ) {
-        // Unless this is a (possibly continued) SysEx message and we're ignoring SysEx,
-        // copy the event buffer into the MIDI message struct.
-        for (unsigned int i=0; i<numBytesReceived; i++)
-          message.bytes.push_back(incomingMessage[i]);
-      }
+      auto status = message.bytes[0];
+      auto ignore = false;
 
-      if (!continueSysex) {
+      // Ignore type: SysEx message
+      ignore |= (ignoreFlags & 0x01) && (status == 0xF0);
+
+      // Ignore type: MIDI Time Code or Timing Clock message
+      ignore |= (ignoreFlags & 0x02) && (status == 0xF1 || status == 0xF8);
+
+      // Ignore type: Active Sensing message
+      ignore |= (ignoreFlags & 0x03) && (status == 0xFE);
+
+      if (!ignore) {
+        // Timestamp calculation
+        if (self->inputData_.firstMessage == true) {
+          message.timeStamp = 0.0;
+          self->inputData_.firstMessage = false;
+        } else {
+          message.timeStamp = (timestamp * 0.000001) - self->lastTime;
+        }
+        self->lastTime = (timestamp * 0.000001);
+
+        // MIDI message dispatching
         if (self->inputData_.usingCallback) {
           auto callback = (RtMidiIn::RtMidiCallback) self->inputData_.userCallback;
           callback(message.timeStamp, &message.bytes, self->inputData_.userData);
@@ -5184,10 +5192,9 @@ void* MidiInAndroid :: pollMidi(void* context) {
             std::cerr << "\nMidiInAndroid: message queue limit reached!!\n\n";
         }
       }
-    }
 
-    // AMidiOutputPort_receive is non-blocking, must poll with some sleep
-    if (numMessagesReceived == 0) usleep(2000);
+      message.bytes.clear();
+    }
   }
 
   return NULL;
