@@ -18,7 +18,7 @@ public static class MidiSystem
       => Marshal.PtrToStringAnsi(_ApiDisplayName(api));
 
     public static Api CompiledApiByName(string name)
-      => CompiledApiByName(name);
+      => _CompiledApiByName(name);
 
     public unsafe static ReadOnlySpan<Api> GetCompiledApi()
     {
@@ -27,9 +27,6 @@ public static class MidiSystem
         fixed (Api* p = buf) _GetCompiledApi((IntPtr)p, (uint)len);
         return buf;
     }
-
-    public static void Error(ErrorType type, string errorString)
-      => Error(type, errorString);
 
     #endregion
 
@@ -49,9 +46,6 @@ public static class MidiSystem
 
     [DllImport(Config.DllName, EntryPoint = "rtmidi_get_compiled_api")]
     public static extern int _GetCompiledApi(IntPtr apis, uint apis_size);
-
-    [DllImport(Config.DllName, EntryPoint = "rtmidi_error")]
-    public static extern void _Error(ErrorType type, string errorString);
 
     #endregion
 }

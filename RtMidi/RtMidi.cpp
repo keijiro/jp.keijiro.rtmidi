@@ -6,7 +6,7 @@
     MIDI input/output subclasses RtMidiIn and RtMidiOut.
 
     RtMidi GitHub site: https://github.com/thestk/rtmidi
-    RtMidi WWW site: http://www.music.mcgill.ca/~gary/rtmidi/
+    RtMidi WWW site: https://caml.music.mcgill.ca/~gary/rtmidi/
 
     RtMidi: realtime MIDI i/o C++ classes
     Copyright (c) 2003-2023 Gary P. Scavone
@@ -39,6 +39,10 @@
 
 #include "RtMidi.h"
 #include <sstream>
+
+inline namespace rt {
+inline namespace midi {
+
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #endif
@@ -1328,7 +1332,7 @@ CFStringRef CreateEndpointName( MIDIEndpointRef endpoint, bool isExternal )
   MIDIObjectGetStringProperty( endpoint, kMIDIPropertyName, &str );
   if ( str != NULL ) {
     CFStringAppend( result, str );
-    CFRelease( str );
+    CFRelease(str);
   }
 
   // some MIDI devices have a leading space in endpoint name. trim
@@ -1383,7 +1387,7 @@ CFStringRef CreateEndpointName( MIDIEndpointRef endpoint, bool isExternal )
           CFStringInsert( result, 0, CFSTR(" ") );
 
         CFStringInsert( result, 0, str );
-        CFRelease( str );
+        CFRelease(str);
       }
     }
   }
@@ -3439,14 +3443,15 @@ std::vector<UWPMidiClass::port> UWPMidiClass::list_ports(winrt::hstring device_s
     return retval;
 }
 
-// Fix MIDI OUT port names starting with `MIDI` to MIDI IN port names with similar ID strings
+// Fix MIDI OUT port names starting with `MIDI` or `2 - MIDI` to MIDI IN port names with similar ID strings
 void UWPMidiClass::fix_display_name(const std::vector<port>& in_ports,
     std::vector<port>& out_ports)
 {
     for (auto& outp : out_ports)
     {
-        if (outp.hex_id.empty() ||
-            std::string_view{ outp.name }.substr(0, 4) != "MIDI")
+        if (outp.hex_id.empty())
+            continue;
+        if (std::string_view{ outp.name }.substr(0, 4) != "MIDI" && std::string_view{ outp.name }.substr(1, 7) != " - MIDI")
             continue;
 
         for (const auto& inp : in_ports)
@@ -5282,3 +5287,6 @@ void MidiOutAndroid :: sendMessage( const unsigned char *message, size_t size ) 
 }
 
 #endif  // __AMIDI__
+
+}
+}

@@ -8,7 +8,8 @@ namespace RtMidi {
 struct WrapperStruct
 {
     public IntPtr ptr;
-    public IntPtr data;
+    public IntPtr callbackProxy;
+    public IntPtr errorCallbackProxy;
     [MarshalAs(UnmanagedType.U1)]
     public bool ok;
     public IntPtr msg;
