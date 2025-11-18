@@ -23,6 +23,7 @@ public static class MidiSystem
     public unsafe static ReadOnlySpan<Api> GetCompiledApi()
     {
         var len = _GetCompiledApi(IntPtr.Zero, 0);
+        if (len <= 0) return ReadOnlySpan<Api>.Empty;
         var buf = new Api[len];
         fixed (Api* p = buf) _GetCompiledApi((IntPtr)p, (uint)len);
         return buf;

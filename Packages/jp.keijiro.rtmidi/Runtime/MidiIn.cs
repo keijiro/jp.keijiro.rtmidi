@@ -138,6 +138,7 @@ public class MidiIn : SafeHandleZeroOrMinusOneIsInvalid
             {
                 _bridgeCallback = null;
                 _CancelCallback(this);
+                if (_self.IsAllocated) _self.Free();
             }
             _messageReceived = null;
         }
