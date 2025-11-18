@@ -281,7 +281,7 @@ void rtmidi_in_cancel_callback (RtMidiInPtr device)
     }
 }
 
-void rtmidi_set_error_callback (RtMidiOutPtr device, RtMidiErrorCCallback callback, void *userData)
+void rtmidi_set_error_callback (RtMidiPtr device, RtMidiErrorCCallback callback, void *userData)
 {
     device->error_callback_proxy = (void*) new CallbackProxyUserData<RtMidiErrorCCallback> (callback, userData);
     try {
@@ -289,6 +289,22 @@ void rtmidi_set_error_callback (RtMidiOutPtr device, RtMidiErrorCCallback callba
     } catch (const RtMidiError & err) {
         device->ok  = false;
         rtmidi_set_error_msg (device, err.what ());
+        delete (CallbackProxyUserData<RtMidiErrorCCallback>*) device->error_callback_proxy;
+        device->error_callback_proxy = 0;
+    }
+}
+
+void rtmidi_cancel_error_callback (RtMidiPtr device)
+{
+    try {
+        ((RtMidi*) device->ptr)->setErrorCallback (0, 0);
+    } catch (const RtMidiError & err) {
+        device->ok  = false;
+        rtmidi_set_error_msg (device, err.what ());
+    }
+
+    if (device->error_callback_proxy)
+    {
         delete (CallbackProxyUserData<RtMidiErrorCCallback>*) device->error_callback_proxy;
         device->error_callback_proxy = 0;
     }

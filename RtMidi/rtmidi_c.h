@@ -262,6 +262,7 @@ RTMIDIAPI int rtmidi_out_send_message (RtMidiOutPtr device, const unsigned char 
 //! \brief Set error callback function on a RtMidiPtr.
 //! See \ref MidiApi::setErrorCallback().
 RTMIDIAPI void rtmidi_set_error_callback (RtMidiPtr device, RtMidiErrorCCallback callback, void *userData);
+RTMIDIAPI void rtmidi_cancel_error_callback (RtMidiPtr device);
 
 #ifdef __cplusplus
 }
