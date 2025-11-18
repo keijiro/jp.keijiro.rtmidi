@@ -1,11 +1,10 @@
 using System;
 using System.Runtime.InteropServices;
-using UnityEngine;
 
 namespace RtMidi {
 
 // MIDI-in port handle
-public class MidiIn : MidiBase
+public class MidiIn : MidiBase, MessageCallbackBridge.IListener
 {
     #region Factory methods
 
@@ -25,12 +24,12 @@ public class MidiIn : MidiBase
 
     protected override void OnReleaseHandle()
     {
-        if (_bridgeCallback != null)
+        if (_onMessage.bridge != null)
         {
             _InCancelCallback(handle);
-            _bridgeCallback = null;
+            _onMessage.bridge.Dispose();
+            _onMessage = (null, null);
         }
-        if (_self.IsAllocated) _self.Free();
     }
 
     protected override Api GetCurrentApiCore()
@@ -43,11 +42,10 @@ public class MidiIn : MidiBase
 
     #region Public properties
 
-    public delegate void MessageReceivedHandler
-      (double time, ReadOnlySpan<byte> data);
+    public delegate void MessageReceivedHandler(double timeStamp, ReadOnlySpan<byte> data);
 
     public MessageReceivedHandler MessageReceived
-      { get => _messageReceived; set => SetBridgeCallback(value); }
+      { get => _onMessage.handler; set => SetMessageCallback(value); }
 
     #endregion
 
@@ -68,62 +66,25 @@ public class MidiIn : MidiBase
 
     #region Message callback handling
 
-    // IL2CPP only supports delegates to static methods. To work around this,
-    // we define a static "bridge" callback that relays calls from the unmanaged
-    // RtMidi library to a user-provided delegate.
+    (MessageReceivedHandler handler, MessageCallbackBridge bridge) _onMessage;
 
-    // Delegate type for RtMidi callback function pointer
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    delegate void MidiCallback
-      (double timeStamp, IntPtr message, nuint messageSize, IntPtr userData);
+    void MessageCallbackBridge.IListener.OnMessage(double timeStamp, ReadOnlySpan<byte> data)
+      => _onMessage.handler?.Invoke(timeStamp, data);
 
-    // Managed callback delegate
-    MessageReceivedHandler _messageReceived;
-
-    // Bridge callback delegate
-    MidiCallback _bridgeCallback;
-
-    // GCHandle used to pass a "self" reference to unmanaged code
-    GCHandle _self;
-
-    // Bridge callback implementation
-    [AOT.MonoPInvokeCallback(typeof(MidiCallback))]
-    unsafe static void BridgeCallback(double time, IntPtr ptr, nuint size, IntPtr user)
+    void SetMessageCallback(MessageReceivedHandler handler)
     {
-        var span = new ReadOnlySpan<byte>(ptr.ToPointer(), (int)size);
-        var self = (MidiIn)GCHandle.FromIntPtr(user).Target;
-        try
+        if (_onMessage.bridge != null)
         {
-            self._messageReceived(time, span);
+            _InCancelCallback(this);
+            _onMessage.bridge.Dispose();
+            _onMessage = (null, null);
         }
-        catch (Exception e)
-        {
-            Debug.LogError($"Exception in MIDI callback: {e}");
-        }
-    }
 
-    // Bridge callback setter/resetter
-    void SetBridgeCallback(MessageReceivedHandler handler)
-    {
         if (handler != null)
         {
-            _messageReceived = handler;
-            if (_bridgeCallback == null)
-            {
-                _bridgeCallback = BridgeCallback;
-                if (!_self.IsAllocated) _self = GCHandle.Alloc(this);
-                _InSetCallback(this, _bridgeCallback, GCHandle.ToIntPtr(_self));
-            }
-        }
-        else
-        {
-            if (_bridgeCallback != null)
-            {
-                _bridgeCallback = null;
-                _InCancelCallback(this);
-                if (_self.IsAllocated) _self.Free();
-            }
-            _messageReceived = null;
+            _onMessage.handler = handler;
+            _onMessage.bridge = new MessageCallbackBridge(this);
+            _InSetCallback(this, _onMessage.bridge.Callback, _onMessage.bridge.UserData);
         }
     }
 
