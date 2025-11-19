@@ -22,16 +22,6 @@ else
 endif
 
 #
-# Compiler/linker options
-#
-
-CCFLAGS += -O2 -Wall -D RTMIDI_EXPORT -D $(MIDI_API)
-
-ifeq ($(findstring clang,$(CC)), clang)
-  CCFLAGS += -Wextra
-endif
-
-#
 # Toolchain
 #
 
@@ -39,12 +29,22 @@ ifndef AR
   AR = ar
 endif
 
-ifndef CC
+ifeq ($(origin CC),default)
   CC = clang
 endif
 
 ifndef STRIP
   STRIP = strip
+endif
+
+#
+# Compiler/linker options
+#
+
+CCFLAGS += -O2 -Wall -D RTMIDI_EXPORT -D $(MIDI_API)
+
+ifeq ($(findstring clang,$(CC)), clang)
+  CCFLAGS += -Wextra -Wno-sign-compare -Wno-vla-cxx-extension
 endif
 
 #
@@ -68,7 +68,6 @@ $(OBJ_DIR)/lib$(PRODUCT).dylib: $(OBJS)
 
 $(OBJ_DIR)/lib$(PRODUCT).so: $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
-	$(STRIP) $@
 
 $(OBJ_DIR)/lib$(PRODUCT).a: $(OBJS)
 	$(AR) -crv $@ $^
