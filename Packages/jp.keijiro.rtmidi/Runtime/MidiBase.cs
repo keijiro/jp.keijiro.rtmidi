@@ -5,7 +5,8 @@ using System.Runtime.InteropServices;
 namespace RtMidi {
 
 // Base class for MIDI port handles
-public abstract class MidiBase : SafeHandleZeroOrMinusOneIsInvalid
+public abstract class MidiBase : SafeHandleZeroOrMinusOneIsInvalid,
+                                 ErrorCallbackBridge.IListener
 {
     #region SafeHandle implementation
 
@@ -14,6 +15,7 @@ public abstract class MidiBase : SafeHandleZeroOrMinusOneIsInvalid
 
     protected override bool ReleaseHandle()
     {
+        ReleaseErrorCallback();
         OnReleaseHandle();
         FreeDeviceHandle(handle);
         return true;
@@ -30,6 +32,11 @@ public abstract class MidiBase : SafeHandleZeroOrMinusOneIsInvalid
     #endregion
 
     #region Common public properties and methods
+
+    public delegate void ErrorReceivedHandler(ErrorType type, string message);
+
+    public ErrorReceivedHandler ErrorReceived
+      { get => _onError.handler; set => SetErrorCallback(value); }
 
     public bool IsOk => WrapperStruct.IsOk(handle);
     public string Error => WrapperStruct.GetMessage(handle);
@@ -57,6 +64,35 @@ public abstract class MidiBase : SafeHandleZeroOrMinusOneIsInvalid
 
     #endregion
 
+    #region Error callback handling
+
+    (ErrorReceivedHandler handler, ErrorCallbackBridge bridge) _onError;
+
+    void ErrorCallbackBridge.IListener.OnError(ErrorType type, string message)
+      => _onError.handler?.Invoke(type, message);
+
+    void SetErrorCallback(ErrorReceivedHandler handler)
+    {
+        ReleaseErrorCallback();
+
+        if (handler != null)
+        {
+            _onError.handler = handler;
+            _onError.bridge = new ErrorCallbackBridge(this);
+            _SetErrorCallback(this, _onError.bridge.Callback, _onError.bridge.UserData);
+        }
+    }
+
+    void ReleaseErrorCallback()
+    {
+        if (_onError.bridge == null) return;
+        _CancelErrorCallback(handle);
+        _onError.bridge.Dispose();
+        _onError = (null, null);
+    }
+
+    #endregion
+
     #region Shared P/Invoke interface
 
     [DllImport(Config.DllName, EntryPoint = "rtmidi_open_port")]
@@ -73,6 +109,12 @@ public abstract class MidiBase : SafeHandleZeroOrMinusOneIsInvalid
 
     [DllImport(Config.DllName, EntryPoint = "rtmidi_get_port_name")]
     static extern int _GetPortName(MidiBase device, uint portNumber, IntPtr bufOut, ref int bufLen);
+
+    [DllImport(Config.DllName, EntryPoint = "rtmidi_set_error_callback")]
+    static extern void _SetErrorCallback(MidiBase device, ErrorCallback callback, IntPtr userData);
+
+    [DllImport(Config.DllName, EntryPoint = "rtmidi_cancel_error_callback")]
+    static extern void _CancelErrorCallback(IntPtr device);
 
     #endregion
 }

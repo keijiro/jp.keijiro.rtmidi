@@ -31,6 +31,68 @@ namespace RtMidi {
 //
 
 //
+// Error callback
+//
+
+// Delegate type for unmanaged RtMidi callback
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+delegate void ErrorCallback
+  (ErrorType type, IntPtr message, IntPtr userData);
+
+// Bridge class
+sealed class ErrorCallbackBridge : IDisposable
+{
+    #region Constructor and IDisposable
+
+    public ErrorCallbackBridge(IListener listener)
+      => _listener = GCHandle.Alloc(listener);
+
+    public void Dispose()
+    {
+        if (_listener.IsAllocated) _listener.Free();
+    }
+
+    #endregion
+
+    #region Public properties for callback registration
+
+    public ErrorCallback Callback => BridgeCallback;
+    public IntPtr UserData => GCHandle.ToIntPtr(_listener);
+
+    #endregion
+
+    #region Interface definition and reference
+
+    public interface IListener
+    {
+        public void OnError(ErrorType type, string message);
+    }
+
+    GCHandle _listener;
+
+    #endregion
+
+    #region Bridge function (called from unmanaged RtMidi)
+
+    [AOT.MonoPInvokeCallback(typeof(ErrorCallback))]
+    public static void BridgeCallback(ErrorType type, IntPtr message, IntPtr user)
+    {
+        var self = (IListener)GCHandle.FromIntPtr(user).Target;
+        var text = Marshal.PtrToStringAnsi(message);
+        try
+        {
+            self.OnError(type, text ?? string.Empty);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Exception in MIDI error callback: {e}");
+        }
+    }
+
+    #endregion
+}
+
+//
 // Midi callback (on message received)
 //
 

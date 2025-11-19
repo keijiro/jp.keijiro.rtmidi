@@ -23,14 +23,7 @@ public class MidiIn : MidiBase, MessageCallbackBridge.IListener
     MidiIn(IntPtr ptr) : base(ptr) {}
 
     protected override void OnReleaseHandle()
-    {
-        if (_onMessage.bridge != null)
-        {
-            _InCancelCallback(handle);
-            _onMessage.bridge.Dispose();
-            _onMessage = (null, null);
-        }
-    }
+      => ReleaseMessageCallback();
 
     protected override Api GetCurrentApiCore()
       => _InGetCurrentApi(this);
@@ -73,12 +66,7 @@ public class MidiIn : MidiBase, MessageCallbackBridge.IListener
 
     void SetMessageCallback(MessageReceivedHandler handler)
     {
-        if (_onMessage.bridge != null)
-        {
-            _InCancelCallback(this);
-            _onMessage.bridge.Dispose();
-            _onMessage = (null, null);
-        }
+        ReleaseMessageCallback();
 
         if (handler != null)
         {
@@ -86,6 +74,14 @@ public class MidiIn : MidiBase, MessageCallbackBridge.IListener
             _onMessage.bridge = new MessageCallbackBridge(this);
             _InSetCallback(this, _onMessage.bridge.Callback, _onMessage.bridge.UserData);
         }
+    }
+
+    void ReleaseMessageCallback()
+    {
+        if (_onMessage.bridge == null) return;
+        _InCancelCallback(handle);
+        _onMessage.bridge.Dispose();
+        _onMessage = (null, null);
     }
 
     #endregion
@@ -103,9 +99,6 @@ public class MidiIn : MidiBase, MessageCallbackBridge.IListener
 
     [DllImport(Config.DllName, EntryPoint = "rtmidi_in_set_callback")]
     static extern void _InSetCallback(MidiIn device, MidiCallback callback, IntPtr userData);
-
-    [DllImport(Config.DllName, EntryPoint = "rtmidi_in_cancel_callback")]
-    static extern void _InCancelCallback(MidiIn device);
 
     [DllImport(Config.DllName, EntryPoint = "rtmidi_in_cancel_callback")]
     static extern void _InCancelCallback(IntPtr device);
