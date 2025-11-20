@@ -45,6 +45,7 @@ CCFLAGS += -O2 -Wall -D RTMIDI_EXPORT -D $(MIDI_API)
 
 ifeq ($(findstring clang,$(CC)), clang)
   CCFLAGS += -Wextra -Wno-sign-compare -Wno-vla-cxx-extension
+  CCFLAGS += -Wno-unused-parameter -Wno-unused-variable
 endif
 
 #

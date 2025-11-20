@@ -1,11 +1,10 @@
 PLATFORM = macOS
 TARGET_TYPE = so
-
 MIDI_API = __MACOSX_CORE__
 
-MIN_VER = 11.0
-CCFLAGS += -arch $(ARCH) -mmacosx-version-min=$(MIN_VER)
-LDFLAGS += -arch $(ARCH) -mmacosx-version-min=$(MIN_VER) -dynamiclib $(SO_ARGS)
+SDK_MIN_VER = 11.0
+CCFLAGS += -arch $(ARCH) -mmacosx-version-min=$(SDK_MIN_VER)
+LDFLAGS += -arch $(ARCH) -mmacosx-version-min=$(SDK_MIN_VER) -dynamiclib $(SO_ARGS)
 
 LIBS = -lc++ -framework CoreAudio -framework CoreFoundation -framework CoreMidi
 

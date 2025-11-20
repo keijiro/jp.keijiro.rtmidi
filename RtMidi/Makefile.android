@@ -3,15 +3,8 @@ ARCH = arm64
 TARGET_TYPE = so
 MIDI_API = __AMIDI__
 
-ifdef ANDROID_NDK_PATH
-NDK_PATH := $(ANDROID_NDK_PATH)
-else
-NDK_PATH := /Applications/Unity/Hub/Editor/6000.0.48f1/PlaybackEngines/AndroidPlayer/NDK/
-endif
-
-BIN_PATH = $(NDK_PATH)/toolchains/llvm/prebuilt/darwin-x86_64/bin
+BIN_PATH = $(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/darwin-x86_64/bin
 CC = $(BIN_PATH)/aarch64-linux-android30-clang++
-STRIP = $(BIN_PATH)/llvm-strip
 
 CCFLAGS = -fPIC
 LDFLAGS = -shared -Wl,-z,max-page-size=16384
