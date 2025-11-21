@@ -6,7 +6,7 @@ See README.md for basic information about this project.
 
 This directory is a Unity project used to test the plugin.
 
-`/Plugin` contains the native part of the plugin, which is a customized version
+`/RtMidi` contains the native part of the plugin, which is a customized version
 of the RtMidi library.
 
 `/rtmidi-upstream` contains the original (upstream) source code of the RtMidi
