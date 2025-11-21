@@ -8,6 +8,6 @@ CC = $(TOOLCHAIN)-g++
 STRIP = $(TOOLCHAIN)-strip
 
 LDFLAGS = -shared
-LIBS = -Wl,-Bstatic -lwinmm -static-libgcc
+LIBS = -static-libstdc++ -static-libgcc -Wl,-Bdynamic -lwinmm
 
 include Common.mk
