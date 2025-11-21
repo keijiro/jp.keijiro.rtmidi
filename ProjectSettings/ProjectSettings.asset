@@ -867,7 +867,7 @@ PlayerSettings:
     ReservedCFE: 1
     Standalone: 4
     VisionOS: 1
-    WebGL: 3
+    WebGL: 4
     Windows Store Apps: 1
     XboxOne: 1
     iPhone: 4

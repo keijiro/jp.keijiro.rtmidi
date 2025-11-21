@@ -3,9 +3,7 @@ ARCH = wasm
 TARGET_TYPE = a
 MIDI_API = __WEB_MIDI_API__
 
-ifndef EM_DIR
-EM_DIR := /Applications/Unity/Hub/Editor/6000.0.48f1/PlaybackEngines/WebGLSupport/BuildTools/Emscripten
-endif
+EM_DIR := $(shell ls -1d /Applications/Unity/Hub/Editor/*/PlaybackEngines/WebGLSupport/BuildTools/Emscripten 2>/dev/null | sort -V | tail -1)
 
 export EM_CONFIG := $(EM_DIR)/.emscripten
 
