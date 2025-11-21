@@ -38,11 +38,19 @@ sealed class MidiInTest : MonoBehaviour
     {
         for (var i = 0; i < _probe.PortCount; i++)
         {
-            var (dev, name) = (MidiIn.Create(), _probe.GetPortName(i));
-            dev.ErrorReceived = (type, text) => AddLog($"[{name}] Error {type}: {text}");
+            var name = _probe.GetPortName(i);
+            if (!Util.IsValidPort(name))
+            {
+                _ports.Add((null, name));
+                continue;
+            }
+
+            var dev = MidiIn.Create();
             if (_useCallback)
                 dev.MessageReceived = (t, msg) => OnMessageReceived(msg, name);
+            dev.ErrorReceived = (t, msg) => OnError(name, t, msg);
             dev.OpenPort(i);
+
             _ports.Add((dev, name));
             AddLog($"Port opened: {name}");
         }
@@ -50,9 +58,12 @@ sealed class MidiInTest : MonoBehaviour
 
     void CloseAllPorts()
     {
-        foreach (var p in _ports) p.dev.Dispose();
+        foreach (var p in _ports) p.dev?.Dispose();
         _ports.Clear();
     }
+
+    void OnError(string name, ErrorType type, string message)
+      => AddLog($"[{name}] Error {type}: {message}");
 
     #endregion
 
@@ -84,6 +95,7 @@ sealed class MidiInTest : MonoBehaviour
 
     unsafe void PollPort(MidiIn dev, string name)
     {
+        if (dev == null) return;
         var buffer = (Span<byte>)(stackalloc byte[32]);
         double time;
         while (true)
