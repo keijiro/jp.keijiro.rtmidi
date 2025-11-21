@@ -3,8 +3,8 @@ ARCH = x86_64
 TARGET_TYPE = so
 MIDI_API = __LINUX_ALSA__
 
-CCFLAGS = -fPIC
-LDFLAGS = -shared -Wl,--gc-sections
+CCFLAGS = -fPIC -pthread -ffunction-sections -fdata-sections
+LDFLAGS = -shared -pthread -Wl,--gc-sections
 LIBS = -lstdc++ -lasound
 
 include Common.mk
