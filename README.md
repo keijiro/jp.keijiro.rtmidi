@@ -21,7 +21,7 @@ Currently, RtMidi for Unity supports the following platform and architecture
 combinations:
 
 - Windows: x86_64
-- macOS: arm64 (Apple Silicon)
+- macOS: Intel and Apple silicon
 - iOS: arm64
 - Linux: x86_64
 - Android: arm64

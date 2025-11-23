@@ -21,13 +21,27 @@ Currently, RtMidi for Unity supports the following platform and architecture
 combinations:
 
 - Windows: x86_64
-- macOS: arm64 (Apple Silicon)
+- macOS: Intel and Apple silicon
 - iOS: arm64
 - Linux: x86_64
 - Android: arm64
 - Web (requires [Web MIDI] support)
 
 [Web MIDI]: https://caniuse.com/midi
+
+In addition, there are some platform-specific considerations to keep in mind:
+
+#### Android
+
+Minis currently does not support the GameActivity entry point. You must select
+"Activity" as the Application Entry Point in the Player Settings.
+
+There is a known issue with multi-port MIDI devices. keijiro/jp.keijiro.rtmidi#16
+
+#### Linux
+
+The RtMidi backend requires ALSA (`libasound2`) on Linux platforms. If Minis
+does not work, please check that ALSA is installed.
 
 ## Installation
 
