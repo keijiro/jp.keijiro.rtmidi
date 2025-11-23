@@ -1,6 +1,6 @@
 {
   "name": "jp.keijiro.rtmidi",
-  "version": "2.1.3",
+  "version": "2.2.0",
   "displayName": "RtMidi",
   "description": "RtMidi plugin for Unity",
   "unity": "2022.3",
@@ -10,5 +10,5 @@
   "documentationUrl": "https://github.com/keijiro/jp.keijiro.rtmidi",
   "licensesUrl": "https://github.com/keijiro/jp.keijiro.rtmidi/blob/master/LICENSE",
   "license": "MIT",
-  "_upm": { "changelog": "" }
+  "_upm": { "changelog": "<b>Added</b><br>- Added error callback support (with explicit cancellation).<br><br><b>Changed</b><br>- Synced the RtMidi C wrapper with upstream.<br>- Added MidiBase abstract base class to share the base functionality between MidiIn and MidiOut.<br>- Refactored the managed callback bridge for IL2CPP.<br>- Refreshed native plugin binaries/import settings for Unity 2022.3 across all supported platforms; improved build scripts including Emscripten detection for Web.<br>- Migrated the package release workflow for the signed package process.<br><br><b>Fixed</b><br>- Avoided recursion in CompiledApiByName P/Invoke and tightened error handling paths when releasing callbacks.<br>- Fixed Linux test startup issues caused by virtual MIDI ports being enumerated as usable devices." }
 }
